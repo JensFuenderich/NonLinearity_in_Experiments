@@ -1,0 +1,981 @@
+---
+title: "Analyses_Manuscript"
+author: "Jens H. Fünderich"
+format: html
+editor: visual
+---
+
+# Set Up
+
+## Install & Load packages
+
+```{r}
+
+## Library Loading
+packages <- c("brms", 
+              "flextable",
+              "ggplot2",
+              "dplyr",
+              "lme4", 
+              "officer",
+              "osfr",
+              "readr", 
+              "rmarkdown")
+
+## install.packages("systemfonts") I had to install this, so flextable would work, you may not have to
+## it fixed this error: 
+# Error: package or namespace load failed for ‘flextable’: 
+# object ‘match_fonts’ is not exported by 'namespace:systemfonts'
+
+## check, whether library already installed or not - install and load as needed:
+apply(as.matrix(packages), MARGIN = 1, FUN = function(x) {
+  
+  pkg_avail <- nzchar(system.file(package = x))   # check if library is installed on system
+  
+  if(pkg_avail){
+    require(x, character.only = TRUE)             # load the library, if already installed
+    
+  }else{
+    install.packages(x)                           # install the library, if missing
+    require(x, character.only = TRUE)             # load after installation
+  }
+})
+
+## install stan (cmdstanr)
+## in case you receive an error, run the following function before install cmdstanr
+## https://discourse.mc-stan.org/t/fail-to-install-cmdstan-v2-35-0-with-cmdstanr-0-8-1/35431/2
+# Sys.setenv("TAR"="internal")
+install.packages("cmdstanr", repos = c('https://stan-dev.r-universe.dev', getOption("repos")))
+
+## GitHub packages 
+apply(as.matrix("MetaPipeX"), MARGIN = 1, FUN = function(x) {
+  
+  pkg_avail <- nzchar(system.file(package = x))   # check if library is installed on system
+  
+  if(pkg_avail){
+    require(x, character.only = TRUE)             # load MetaPipeX, if already installed
+    
+  }else{
+    renv::install("JensFuenderich/MetaPipeX/R-Package") # install MetaPipeX, if missing
+    require(x, character.only = TRUE)             # load after installation
+  }
+})
+
+## keep the environment tidy 
+rm(packages)
+
+```
+
+## Source Custom Functions
+
+```{r}
+
+## source the function for Fig. 2, 3, 7 & 8
+source("Custom_Functions/MD_heterogeneity_plots.R")
+
+```
+
+## Download Multi-Lab Data
+
+```{r}
+
+## download data as rds object from DRIPHT Repository (https://osf.io/g2fzq) 
+rds_download <- osfr::osf_retrieve_file("2nw6v") %>% 
+  osfr::osf_download(., 
+                     path = file.path("Input_Data/rds"))
+
+## import the list 
+IPD_list <- readRDS(rds_download$local_path)
+
+## store IPD per data-set as csv files 
+invisible(
+ sapply(
+  names(IPD_list$IPD), 
+  function(name){
+    readr::write_csv(IPD_list$IPD[[name]], 
+                 file = paste(
+                   "Input_Data/", "csv/", # path 
+                   paste(name, ".csv", sep = ""), # file name
+                   sep = ""))
+  }) 
+)
+
+## keep the environment tidy 
+rm(
+  rds_download, 
+  IPD_list
+)
+
+```
+
+# Fig. 1 - 5
+
+## Fig. 1
+
+```{r}
+
+## Wright's model: y = K * x^n 
+## set parameters 
+K <- 1
+n <- 0.1
+x <- seq(from = 1, to = 25, by = 0.01)
+y <- K * x^n 
+
+## store x and y in a df for plotting 
+Fig_1_data <- data.frame(
+  x = x, 
+  y = y
+)
+
+## create Fig. 1
+Fig_1 <- ggplot(data = Fig_1_data, 
+       aes(x = x, 
+           y = y)) + 
+  geom_point() + 
+  geom_segment(aes(x = 2.5, y = 1.1,
+                   xend = 7.5, yend = 1.1)) +
+  geom_segment(aes(x = 7.5, y = 1.1,
+                   xend = 7.5, yend = 1.225), 
+               linetype = 2) +
+  geom_segment(aes(x = 15, y = 1.31,
+                   xend = 20, yend = 1.31)) +
+  geom_segment(aes(x = 20, y = 1.31,
+                   xend = 20, yend = 1.35), 
+               linetype = 2) +
+  geom_point(aes(x = 2.5, y = 1.1), shape = 16, size = 6, color = "black") +
+  geom_point(aes(x = 7.5, y = 1.225), shape = 1, size = 6, color = "black") +
+  geom_point(aes(x = 7.5, y = 1.225), shape = 16, size = 6, color = "grey") +
+  geom_point(aes(x = 15, y = 1.31), shape = 16, size = 6, color = "black") +
+  geom_point(aes(x = 20, y = 1.35), shape = 1, size = 6, color = "black") +
+  geom_point(aes(x = 20, y = 1.35), shape = 16, size = 6, color = "grey") +
+  xlab(label = "amount of algebra training") + 
+  ylab(label = "ability to solve algebraic equation") + 
+  theme_minimal() + 
+  theme(axis.text.x = element_blank(),
+        axis.text.y = element_blank()) + 
+  annotate("text", label = "Delta", parse = TRUE,
+           x = 8.5, y = 1.165, size = 6) +
+  annotate("text", label = "i = 1", 
+           x = 9.4, y = 1.155, size = 3) +
+  annotate("text", label = "Delta", parse = TRUE,
+           x = 21, y = 1.33, size = 6) +
+  annotate("text", label = "i = 2", 
+           x = 21.9, y = 1.32, size = 3)
+
+## save Fig. 1
+ggsave(file = "Output_Graphics/Fig_1.png", 
+       Fig_1, 
+       width = 16, 
+       height = 9, 
+       units = "cm", 
+       bg='#ffffff') 
+
+Fig_1
+
+## keep the environment tidy 
+rm(K, n, x, y)
+
+```
+
+## 
+
+## Fig. 2 a) & b)
+
+Some information from this chunk is used in that of Fig. 3 as well.
+
+```{r}
+
+### CM and MD correlated 
+
+## set parameters for CM 
+CM_mu <- 5
+CM_tau <- 2.5
+
+## set parameters for MD
+MD_mu <- 3
+MD_tau <- 0.8
+
+## set the number of replications
+k <- 40
+
+ISC <- -1
+COV <- ISC * (CM_tau * MD_tau)
+Sigma <- matrix(data = c(CM_tau^2, COV, 
+                         COV, MD_tau^2), 
+                nrow = 2)
+
+## sample data 
+set.seed(12)
+sampling_results <- MASS::mvrnorm(n = k, 
+                                  mu = c(CM_mu, MD_mu), 
+                                  Sigma = Sigma, 
+                                  empirical = FALSE)
+
+## create df 
+Fig_2_data <- data.frame(
+  Data_Collection_Site = as.character(
+    seq(from = 1, to = k, by = 1)), 
+  CM = sampling_results[,1], 
+  MD = sampling_results[,2]
+)
+
+## create Fig. 2
+Fig_2 <- MD_heterogeneity_plots(Data_Collection_Site = Fig_2_data$Data_Collection_Site, 
+                                CM = Fig_2_data$CM,
+                                TM = Fig_2_data$CM + Fig_2_data$MD)
+
+## save Fig. 2
+ggsave(file = "Output_Graphics/Fig_2.png", 
+       Fig_2, 
+       width = 16, 
+       height = 8, 
+       units = "cm") 
+
+Fig_2
+
+## keep the environment tidy 
+rm(CM_tau, 
+   COV,
+   ISC,
+   sampling_results, 
+   Sigma)
+
+```
+
+## Fig. 3 a) & b)
+
+Some information from the previous chunk (Fig. 2) is used in the following chunk as well.
+
+```{r}
+
+
+### CM and MD uncorrelated 
+
+## set new heterogeneity for CM
+CM_tau <- 0.01
+
+## create df
+Fig_3_data <- Fig_2_data
+
+set.seed(12)
+## sample data 
+Fig_3_data$CM <- rnorm(n = k, 
+                       mean = CM_mu, 
+                       sd = CM_tau)
+Fig_3_data$MD <- rnorm(n = k, 
+                       mean = MD_mu, 
+                       sd = MD_tau)
+
+## create Fig. 3
+Fig_3 <- MD_heterogeneity_plots(Data_Collection_Site = Fig_3_data$Data_Collection_Site, 
+                                CM = Fig_3_data$CM, 
+                                TM = Fig_3_data$CM + Fig_3_data$MD)
+
+## save Fig. 3
+ggsave(file = "Output_Graphics/Fig_3.png", 
+       Fig_3, 
+       width = 16, 
+       height = 8, 
+       units = "cm") 
+
+Fig_3
+
+## keep the environment tidy 
+rm(CM_mu, 
+   CM_tau, 
+   k, 
+   MD_mu,
+   MD_tau)
+
+```
+
+## Fig. 4 a) & b)
+
+```{r}
+
+
+## Wright's model: y = K * x^n 
+## set parameters 
+K <- 2
+n <- 4
+x <- seq(from = 1, to = 25, by = 0.01)
+y <- K * x^n 
+
+## save x and y in df for plotting 
+Fig_4_a_data <- data.frame(
+  x = x, 
+  y = y
+)
+
+## create Fig. 4 a)
+Fig_4_a <- ggplot(data = Fig_4_a_data, 
+                  aes(x = x, y = y)) + 
+  geom_point() + 
+  xlab(label = "independent variable") + 
+  ylab(label = "a)") +
+  theme_minimal() + 
+  theme(axis.title.x = element_blank(), 
+        axis.title.y = element_text(angle = 0), 
+        axis.text.x = element_blank(), 
+        axis.text.y = element_blank())
+
+## log function: 1 / (1 + exp(-x)) 
+## create new x and y 
+x <- seq(from = -5, to = 5, by = 0.01)
+y <- 10 + 1 / (1 + exp(-x)) 
+
+## save x and y in df for plotting 
+Fig_4_b_data <- data.frame(
+  x = x, 
+  y = y
+)
+
+## create Fig. 4 b) 
+Fig_4_b <- ggplot(data = Fig_4_b_data, 
+                  aes(x = x, y = y)) + 
+  geom_point() + 
+  # xlab(label = "independent variable") + 
+  ylab(label = "b)") +
+  theme_minimal() + 
+  theme(axis.title.x = element_blank(), 
+        axis.title.y = element_text(angle = 0), 
+        axis.text.x = element_blank(), 
+        axis.text.y = element_blank())
+
+## list with plots for Fig. 4
+Fig_4_list <- list(Fig_4_a, Fig_4_b)
+
+## create Fig. 4
+Fig_4 <- gridExtra::arrangeGrob(
+  grobs = Fig_4_list, 
+  nrow = 2, 
+  ncol = 1, 
+  bottom = "independent variable",
+  left = "dependent variable")
+
+## save Fig. 4
+ggsave(file = "Output_Graphics/Fig_4.png", 
+       Fig_4, 
+       width = 16, 
+       height = 9, 
+       units = "cm") 
+
+## plot Fig. 4
+gridExtra::grid.arrange(grobs = Fig_4_list, 
+                        nrow = 2, 
+                        ncol = 1, 
+                        bottom = "independent variable",
+                        left = "dependent variable")
+
+## keep the environment tidy 
+rm(K, n, x, y, 
+   Fig_4_list)
+
+```
+
+## Fig. 5
+
+```{r}
+
+## create Fig. 5
+Fig_5 <- ggplot() + 
+  geom_point() + 
+  geom_segment(aes(x = 1, y = 1.25, xend = 7, yend = 1.25), 
+               linewidth = 1) + 
+  geom_segment(aes(x = 1, y = 0.75, xend = 1, yend = 1.75), 
+               linewidth = 1) + 
+  geom_segment(aes(x = 2, y = 1, xend = 2, yend = 1.5), 
+               linewidth = 1) + 
+  geom_segment(aes(x = 3, y = 1, xend = 3, yend = 1.5), 
+               linewidth = 1) + 
+  geom_segment(aes(x = 4, y = 1, xend = 4, yend = 1.5), 
+               linewidth = 1) + 
+  geom_segment(aes(x = 5, y = 1, xend = 5, yend = 1.5), 
+               linewidth = 1) + 
+  geom_segment(aes(x = 6, y = 1, xend = 6, yend = 1.5), 
+               linewidth = 1) + 
+  geom_segment(aes(x = 7, y = 0.75, xend = 7, yend = 1.75), 
+               linewidth = 1) + 
+  geom_segment(aes(x = 2, y = 7, xend = 5, yend = 7), 
+               linewidth = 1, 
+               color = "#0190C5") + 
+  geom_segment(aes(x = 3, y = 5.5, xend = 6.5, yend = 5.5), 
+               linewidth = 1, 
+               color = "#0190C5") + 
+  geom_segment(aes(x = 4.5, y = 4, xend = 7, yend = 4), 
+               linewidth = 1, 
+               color = "#0190C5") + 
+  geom_segment(aes(x = 7, y = 4, xend = 7.5, yend = 4), 
+               linewidth = 1, 
+               linetype = 2, 
+               color = "red") + 
+  geom_segment(aes(x = 5.5, y = 2.5, xend = 7, yend = 2.5), 
+               linewidth = 1, 
+               color = "#0190C5") + 
+  geom_segment(aes(x = 7, y = 2.5, xend = 8.5, yend = 2.5), 
+               linewidth = 1, 
+               linetype = 2, 
+               color = "red") + 
+  ylim(0,8) +
+  annotate(geom = "text", x = 1, y = 0.3, label="1") +
+  annotate(geom = "text", x = 4, y = 0.3, label="4") +
+  annotate(geom = "text", x = 7, y = 0.3, label="7") +
+  annotate(geom = "text", x = 1.75, y = 2.25, label="rating scale") +
+  xlab(label = "latent dependent variable") +
+  ylab(label = "sample") +
+  theme_light() + 
+  scale_x_continuous(breaks = seq(from = 0, to = 9, by = 1), limits = c(0,9)) +
+  theme(# axis.title.x = element_blank(),
+        # axis.title.y = element_blank(),
+        axis.text.x = element_blank(), 
+        axis.text.y = element_blank()) 
+
+## save Fig. 5
+ggsave(file = "Output_Graphics/Fig_5.png", 
+       Fig_5, 
+       width = 16, 
+       height = 9, 
+       units = "cm") 
+
+## plot Fig. 5
+Fig_5
+
+```
+
+# Prepare Multi-Lab Data
+
+## Import data
+
+```{r}
+
+## collect paths 
+paths <-  list.files(path = "Input_Data/csv", 
+                    pattern = "*.csv", 
+                    full.names = TRUE)
+
+## apply read function to paths 
+data_file <- lapply(paths, readr::read_csv)
+
+## rename list objects 
+names <- stringr::str_remove(
+  string = list.files(path = "Input_Data/csv", 
+                      pattern = "*.csv",
+                      full.names = FALSE), 
+  pattern = ".csv")
+names(data_file) <- names
+
+## keep environment tidy 
+rm(paths, 
+   names)
+
+```
+
+## Change PSA06 & ML3 Ross
+
+```{r}
+
+# 
+# data_file$PSA_006_Trolley_Problem$Group <- ifelse(data_file$PSA_006_Trolley_Problem$Group == 1,
+#                                                   0, 1)
+# 
+# data_file$ML3_Ross3$Group <- ifelse(data_file$ML3_Ross3$Group == 1,
+#                                                   0, 1)
+
+```
+
+## Identify Heterogeneous Efffects
+
+```{r}
+
+## create site summaries
+Site_Summaries <- MetaPipeX::summarize_sites(data = data_file)
+
+# ## run MetaPipeX function to merge site summaries
+# Merged_Site_Summaries <- MetaPipeX::merge_site_summaries(
+#   data = Site_Summaries$Site_Summaries
+#   )
+
+## all MA except for Jacowitz_Population 
+two_stage_MA_MD <- lapply(names(Site_Summaries$Site_Summaries)[-9], 
+       function(MASC_name){
+         # select data set 
+         MASC_data <- Site_Summaries$Site_Summaries[[MASC_name]]
+         # run meta-analysis 
+         metafor::rma(
+           yi = MD, 
+           sei = SE_MD,
+           data = MASC_data, 
+           method = "REML"
+         )
+       })
+
+names(two_stage_MA_MD) <- names(data_file)[-9]
+
+##  MA  for Jacowitz_Population 
+ML1_Jacowitz_Population <- lapply(names(Site_Summaries$Site_Summaries)[9], 
+       function(MASC_name){
+         # select data set 
+         MASC_data <- Site_Summaries$Site_Summaries[[MASC_name]]
+         # run meta-analysis 
+         metafor::rma(
+           yi = MD, 
+           sei = SE_MD,
+           data = MASC_data, 
+           method = "REML", 
+           control=list(stepadj=0.3, 
+                        verbose=TRUE)
+         )
+       })
+
+## add Jacowitz_Population to the list 
+two_stage_MA_MD$ML1__Jacowitz_Population <- ML1_Jacowitz_Population[[1]]
+
+## reorder list according to initial input 
+two_stage_MA_MD <- two_stage_MA_MD[
+  base::order(
+    names(two_stage_MA_MD), 
+    names(Site_Summaries$Site_Summaries)
+    )]
+
+## identify which data sets contain heterogeneous effects 
+inclusion_df <- data.frame(
+  Data_Set = names(two_stage_MA_MD), 
+  Include = unlist(lapply(
+    names(two_stage_MA_MD), 
+    function(name){
+      ifelse(test = two_stage_MA_MD[[name]]$QEp <= 0.05, 
+             yes = "yes", 
+             no = "no")
+      }))
+  )
+
+## filter data frame to select data sets for the analyses 
+analysis_subset <- inclusion_df %>% dplyr::filter(Include == "yes")
+
+## store as vector
+analysis_subset <- analysis_subset$Data_Set
+
+## print included effects 
+inclusion_df
+
+## keep environment tidy 
+rm(Site_Summaries,
+   ML1_Jacowitz_Population, 
+   two_stage_MA_MD, 
+   inclusion_df)
+
+
+```
+
+# Analyze Multi-Lab Data
+
+#### brms
+
+```{r}
+
+### by default, this chunk only imports the files  
+### if you wish to re-run the brms models, remove the # in the following chunks
+### it took about 40 minutes on a Macbook Air M2 to run the models
+
+# ## run the model
+# IPD_MA_brms <- lapply(analysis_subset,
+#                            function(name){
+#                               # random intercepts & random slopes
+#                               brms::brm(
+#                                 brms::bf(
+#                                   formula = DV ~ Group + (Group | Data_Collection_Site), 
+#                                   decomp = "QR"),
+#                                 data = data_file[[name]],
+#                                 cores = 4, 
+#                                 backend = "cmdstanr"
+#                                 )
+#                              })
+# 
+# ## rename list objects
+# names(IPD_MA_brms) <- analysis_subset
+# 
+# ## export results 
+# readr::write_rds(IPD_MA_brms, "IPD_MA_brms.rds")
+
+## import results: if the data exist, this saves a lot of time
+IPD_MA_brms <- readr::read_rds("Output_Data/IPD_MA_brms.rds")
+
+```
+
+# Table 1
+
+```{r}
+
+## treatment group mean: 
+
+## tau_TM = tau_CM + tau_MD + 2 * COV(CM, MD) 
+
+## ISC tau_CM * tau_MD = COV(CM, MD)  
+
+
+## create list with table data 
+Table_1_data <- lapply(
+  seq(from = 1, to = length(analysis_subset), by = 1),
+  function(ID){
+    ## get name of the data set 
+    name <- analysis_subset[ID]
+    ## grab the summary file for the data set 
+    data <- summary(IPD_MA_brms[[name]])
+    ## calculate ratio (tau_TM/tau_CM)
+    ## tau_TM = sqrt( tau_CM + tau_MD + 2 * ISC * tau_CM * tau_MD )
+    ratio <- sqrt(data$random$Data_Collection_Site$Estimate[1]^2 + 
+      data$random$Data_Collection_Site$Estimate[2]^2 + 
+      2 * data$random$Data_Collection_Site$Estimate[3] * 
+      data$random$Data_Collection_Site$Estimate[1] * 
+      data$random$Data_Collection_Site$Estimate[2]) / 
+      data$random$Data_Collection_Site$Estimate[1]
+    ## craete data table 
+    tibble::tibble(
+      "ID" = paste(ID, ")", sep = ""),
+      "Data Set" = name, 
+      # "ES Het." = ifelse(test = data$random$Data_Collection_Site$`l-95% CI`[2] > 0, 
+      #                    yes = "yes", 
+      #                    no = "yes"),
+      "CM Het." = ifelse(test = data$random$Data_Collection_Site$`l-95% CI`[1] > 0, 
+                         yes = "yes", 
+                         no = "yes"),
+      "Ratio" = ratio,
+      "ISC" = data$random$Data_Collection_Site$Estimate[3],
+      "ISC LL" = data$random$Data_Collection_Site$`l-95% CI`[3],
+      "ISC UL" = data$random$Data_Collection_Site$`u-95% CI`[3]
+      )
+    
+  }
+)
+
+## create data table with all data sets 
+Table_1_data <- do.call(rbind, Table_1_data)
+
+## export table as csv
+readr::write_csv(Table_1_data, file = "Output_Tables/Manuscript/table_1.csv")
+
+## export table as .docx
+officer::read_docx() %>% 
+  flextable::body_add_flextable(value = flextable::flextable(data = Table_1_data)) %>% 
+  print(target = "Output_Tables/Manuscript/table_1.docx")
+
+```
+
+# Fig. 6 - 8
+
+## Fig. 6
+
+Intercept & Slope Scatter Plots
+
+```{r}
+
+## create list with model results for intercept and slope 
+Fig_6_data_list <- lapply(
+  analysis_subset, 
+  function(name){
+    data <- as.data.frame(brms::ranef(IPD_MA_brms[[name]]))
+    ranef_intercepts <- data$Data_Collection_Site.Estimate.Intercept
+    ranef_slopes <- data$Data_Collection_Site.Estimate.Group
+    fixef_intercept <- summary(IPD_MA_brms[[name]])
+    fixef_intercept <- fixef_intercept$fixed["Intercept","Estimate"]
+    fixef_slope <- summary(IPD_MA_brms[[name]])
+    fixef_slope <- fixef_slope$fixed["Group","Estimate"]
+    
+    data.frame(
+      MASC = rep(name, times = length(ranef_slopes)),
+      intercepts = fixef_intercept + ranef_intercepts, 
+      slopes = fixef_slope + ranef_slopes
+      )
+  }
+)
+
+## create df with model results for intercept and slope 
+Fig_6_data <- do.call(rbind, Fig_6_data_list)
+
+## create Fig. 6
+Fig_6_list <- lapply(
+  seq(from = 1, to = length(analysis_subset), by = 1),
+  function(ID){
+    ## get name of the data set 
+    name <- analysis_subset[ID]
+    
+    ## select data set 
+    data <- Fig_6_data %>% dplyr::filter(MASC == name)
+    
+    ## create plot 
+    ggplot(aes(x = intercepts, 
+               y = slopes), 
+           data = data) + 
+      geom_point() + 
+      ggtitle(label = paste(ID, ")", sep = "")) + 
+      theme_light() +
+      theme(
+        axis.title.x = element_blank(), 
+        axis.title.y = element_blank(), 
+        axis.text.x = element_blank(), 
+        axis.text.y = element_blank()
+      ) # + plot_coding_colors
+    }
+)
+
+## create Fig. 6 
+Fig_6 <- gridExtra::arrangeGrob(
+  grobs = Fig_6_list, 
+  nrow = 4, 
+  ncol = 5, 
+  bottom = "intercept", 
+  left = "slope")
+
+## save Fig. 6
+ggsave(file = "Output_Graphics/Fig_6.png", 
+       Fig_6, 
+       width = 16, 
+       height = 15, 
+       units = "cm") 
+
+## plot Fig. 6
+gridExtra::grid.arrange(grobs = Fig_6_list, 
+                        nrow = 4, 
+                        ncol = 5, 
+                        bottom = "intercept", 
+                        left = "slope")
+
+## keep environment tidy 
+rm(Fig_6_data_list, 
+   Fig_6_list)
+
+```
+
+## Fig. 7 a) & b) 
+
+Jacowitz_Births
+
+```{r}
+
+## create the individual plots
+Fig_7_a_b <- MD_heterogeneity_plots(brms_object = IPD_MA_brms$ML1__Jacowitz_Births, 
+                            return_plot_list = TRUE)
+Fig_7_c_d <- MD_heterogeneity_plots(brms_object = IPD_MA_brms$ML1__Jacowitz_Height, 
+                            return_plot_list = TRUE, 
+                            plot_1_title = "c)", 
+                            plot_2_title = "d)")
+
+## create Fig. 7 
+Fig_7 <- gridExtra::arrangeGrob(
+  grobs = c(Fig_7_a_b, 
+            Fig_7_c_d), 
+  nrow = 2, 
+  ncol = 2)
+
+## save Fig. 7
+ggsave(file = "Output_Graphics/Fig_7.png", 
+       Fig_7, 
+       width = 16, 
+       height = 16, 
+       units = "cm") 
+
+## plot Fig. 7
+gridExtra::grid.arrange(
+  grobs = c(Fig_7_a_b, 
+            Fig_7_c_d), 
+  nrow = 2, 
+  ncol = 2)
+
+## keep environment tidy 
+rm(Fig_7_a_b, 
+   Fig_7_c_d)
+
+```
+
+## Fig. 8 a) & b) 
+
+Jacowitz_Height
+
+```{r}
+
+## create the individual plots
+Fig_8_a_b <- MD_heterogeneity_plots(brms_object = IPD_MA_brms$ML2__Risen, 
+                            return_plot_list = TRUE)
+Fig_8_c_d <- MD_heterogeneity_plots(brms_object = IPD_MA_brms$ML2__Hsee, 
+                            return_plot_list = TRUE, 
+                            plot_1_title = "c)", 
+                            plot_2_title = "d)")
+
+## create Fig. 8 
+Fig_8 <- gridExtra::arrangeGrob(
+  grobs = c(Fig_8_a_b, 
+            Fig_8_c_d), 
+  nrow = 2, 
+  ncol = 2)
+
+## save Fig. 8
+ggsave(file = "Output_Graphics/Fig_8.png", 
+       Fig_8, 
+       width = 16, 
+       height = 16, 
+       units = "cm") 
+
+## plot Fig. 8 
+gridExtra::grid.arrange(
+  grobs = c(Fig_8_a_b, 
+            Fig_8_c_d), 
+  nrow = 2, 
+  ncol = 2)
+
+## keep environment tidy 
+rm(Fig_8_a_b, 
+   Fig_8_c_d)
+
+```
+
+# Appendix 
+
+```{r}
+
+## run the model
+IPD_MA_lme4 <- lapply(analysis_subset,
+                      function(name){
+                        # random intercepts & random slopes
+                        lme4::lmer(DV ~ Group + (Group | Data_Collection_Site),
+                                   data = data_file[[name]], 
+                                   REML = TRUE, 
+                                   control = lme4::lmerControl(optimizer = "bobyqa"))
+                        })
+
+## rename list objects
+names(IPD_MA_lme4) <- analysis_subset
+
+## export results 
+readr::write_rds(IPD_MA_lme4, "Output_Data/IPD_MA_lme4.rds")
+
+## create list with ISC and slope (MD) heterogeneity
+lme4_comparison <- lapply(
+  analysis_subset, 
+  function(name){
+    summary_object <- summary(IPD_MA_lme4[[name]])
+    ## create list with attributes from the summary object 
+    varcor_info <- attributes(summary_object$varcor$Data_Collection_Site)
+    ## create output df 
+    data.frame(
+      data_set = name, 
+      slope_heterogeneity = as.numeric(varcor_info$stddev["Group"]), 
+      ISC = varcor_info$correlation[1,2]
+    )
+  }
+)
+
+## store as df
+lme4_comparison <- do.call(rbind, lme4_comparison)
+
+### brms
+## create list with ISC and slope (MD) heterogeneity
+brms_comparison <- lapply(
+  analysis_subset, 
+  function(name){
+    summary_object <- summary(IPD_MA_brms[[name]])
+    ## create df with sd & cor for intercept and slope
+    sdcor_info <- summary_object$random$Data_Collection_Site
+    ## create output df 
+    data.frame(
+      data_set = name, 
+      slope_heterogeneity = sdcor_info[2,"Estimate"], 
+      ISC = sdcor_info[3,"Estimate"]
+    )
+  }
+)
+
+## store as df
+brms_comparison <- do.call(rbind, brms_comparison)
+
+comparison_df <- data.frame(
+  data_set = brms_comparison$data_set, 
+  brms_slope_heterogeneity = brms_comparison$slope_heterogeneity, 
+  lme4_slope_heterogeneity = lme4_comparison$slope_heterogeneity, 
+  brms_ISC = brms_comparison$ISC, 
+  lme4_ISC = lme4_comparison$ISC
+)
+
+
+## plot results for the ratio of slope heterogeneities to compare the model results
+## create A 1.1
+A_1.1 <- ggplot(aes(x = brms_slope_heterogeneity/lme4_slope_heterogeneity), 
+                data = comparison_df)  + 
+  geom_histogram() + 
+  theme_minimal() + 
+  scale_y_continuous(breaks = seq(from = 0, to = 9, by = 1))
+
+
+## save A 1.1
+ggsave(file = "A_1.1.png", 
+       A_1.1, 
+       width = 16, 
+       height = 9, 
+       units = "cm") 
+
+## plot A 1.1
+A_1.1
+
+
+## plot results for the ISC to compare the model results
+## create A 1.2
+A_1.2 <- ggplot(aes(x = brms_ISC, 
+                    y = lme4_ISC), 
+                data = comparison_df) + 
+  geom_point() + 
+  theme_minimal() + 
+  scale_x_continuous(breaks = seq(from = -1, to = 0.25, by = 0.25)) +
+  scale_y_continuous(breaks = seq(from = -1, to = 0.25, by = 0.25))
+
+## save A 1.2
+ggsave(file = "A_1.2.png", 
+       A_1.2, 
+       width = 16, 
+       height = 9, 
+       units = "cm") 
+
+## plot A 1.2
+A_1.2
+
+### results:
+## one data-set, ML1_Jacowitz_Births, produces NA for ISC in lme4 (not enough intercept heterogeneity to estimate covariance)
+## one data-set, ML2_Critcher, produces ISC = -1 in lme4 (not enough slope heterogeneity to estimate covariance)
+## the rest is consistent 
+
+## keep environment tidy 
+rm(lme4_comparison, 
+   brms_comparison)
+
+```
+
+# Digital Appendix 
+
+```{r}
+
+## download table from DRIPHT Repository (https://osf.io/g2fzq) 
+table_download <- osfr::osf_retrieve_file("cyx4v") %>% 
+  osfr::osf_download(., 
+                     path = file.path("Output_Tables/Digital_Appendix/"))
+
+## rename table 
+file.rename(from = "Output_Tables/Digital_Appendix/metadata_sheet.csv", 
+            to = "Output_Tables/Digital_Appendix/digital_appendix_1.csv")
+
+## import table 
+digital_appendix_1 <- readr::read_csv2("Output_Tables/Digital_Appendix/digital_appendix_1.csv")
+
+## reduce the table to the "analysis_subset"
+digital_appendix_2 <- digital_appendix_1 %>% 
+  dplyr::filter(Repository_ID %in% analysis_subset)
+
+## export csv 
+readr::write_csv(digital_appendix_2, 
+                 file = "Output_Tables/Digital_Appendix/digital_appendix_2.csv")
+
+## keep environment tidy 
+rm(table_download, 
+   digital_appendix_1, 
+   digital_appendix_2)
+
+```
+
+## 
