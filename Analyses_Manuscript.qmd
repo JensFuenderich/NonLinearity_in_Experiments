@@ -633,16 +633,13 @@ Table_1_data <- lapply(
     tibble::tibble(
       "ID" = paste(ID, ")", sep = ""),
       "Data Set" = name, 
-      # "ES Het." = ifelse(test = data$random$Data_Collection_Site$`l-95% CI`[2] > 0, 
-      #                    yes = "yes", 
-      #                    no = "yes"),
       "CM Het." = ifelse(test = data$random$Data_Collection_Site$`l-95% CI`[1] > 0, 
                          yes = "yes", 
                          no = "yes"),
-      "Ratio" = ratio,
-      "ISC" = data$random$Data_Collection_Site$Estimate[3],
-      "ISC LL" = data$random$Data_Collection_Site$`l-95% CI`[3],
-      "ISC UL" = data$random$Data_Collection_Site$`u-95% CI`[3]
+      "Ratio" = round(ratio, digits = 3),
+      "ISC" = round(data$random$Data_Collection_Site$Estimate[3], digits = 3),
+      "ISC LL" = round(data$random$Data_Collection_Site$`l-95% CI`[3], digits = 3),
+      "ISC UL" = round(data$random$Data_Collection_Site$`u-95% CI`[3], digits = 3)
       )
     
   }
