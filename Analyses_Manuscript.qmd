@@ -814,7 +814,7 @@ Fig_8 <- gridExtra::arrangeGrob(
   ncol = 2)
 
 ## save Fig. 8
-ggsave(file = "Output_Graphics/Fig_7.png", 
+ggsave(file = "Output_Graphics/Fig_8.png", 
        Fig_8, 
        width = 16, 
        height = 16, 
