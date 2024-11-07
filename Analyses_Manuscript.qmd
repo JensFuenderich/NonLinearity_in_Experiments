@@ -622,7 +622,7 @@ Table_1_data <- lapply(
     ## grab the summary file for the data set 
     data <- summary(IPD_MA_brms[[name]])
     ## calculate ratio (tau_TM/tau_CM)
-    ## tau_TM = sqrt( tau_CM + tau_MD + 2 * ISC * tau_CM * tau_MD )
+    ## tau_TM = sqrt( tau_CM^2 + tau_MD^2 + 2 * ISC * tau_CM * tau_MD )
     ratio <- sqrt(data$random$Data_Collection_Site$Estimate[1]^2 + 
       data$random$Data_Collection_Site$Estimate[2]^2 + 
       2 * data$random$Data_Collection_Site$Estimate[3] * 
@@ -745,19 +745,23 @@ rm(Fig_6_data_list,
 
 ## Fig. 7 a) & b) 
 
-Jacowitz_Births
+Data-Sets:
+
+-   ML2\_\_Risen
+
+-   ML2\_\_Hsee
 
 ```{r}
 
 ## create the individual plots
-Fig_7_a_b <- MD_heterogeneity_plots(brms_object = IPD_MA_brms$ML1__Jacowitz_Births, 
+Fig_7_a_b <- MD_heterogeneity_plots(brms_object = IPD_MA_brms$ML2__Risen, 
                             return_plot_list = TRUE)
-Fig_7_c_d <- MD_heterogeneity_plots(brms_object = IPD_MA_brms$ML1__Jacowitz_Height, 
+Fig_7_c_d <- MD_heterogeneity_plots(brms_object = IPD_MA_brms$ML2__Hsee, 
                             return_plot_list = TRUE, 
                             plot_1_title = "c)", 
                             plot_2_title = "d)")
 
-## create Fig. 7 
+## create Fig. 7
 Fig_7 <- gridExtra::arrangeGrob(
   grobs = c(Fig_7_a_b, 
             Fig_7_c_d), 
@@ -786,19 +790,23 @@ rm(Fig_7_a_b,
 
 ## Fig. 8 a) & b) 
 
-Jacowitz_Height
+Data-Sets:
+
+-   ML1\_\_Jacowitz_Births
+
+-   ML1\_\_Jacowitz_Height
 
 ```{r}
 
 ## create the individual plots
-Fig_8_a_b <- MD_heterogeneity_plots(brms_object = IPD_MA_brms$ML2__Risen, 
+Fig_8_a_b <- MD_heterogeneity_plots(brms_object = IPD_MA_brms$ML1__Jacowitz_Births, 
                             return_plot_list = TRUE)
-Fig_8_c_d <- MD_heterogeneity_plots(brms_object = IPD_MA_brms$ML2__Hsee, 
+Fig_8_c_d <- MD_heterogeneity_plots(brms_object = IPD_MA_brms$ML1__Jacowitz_Height, 
                             return_plot_list = TRUE, 
                             plot_1_title = "c)", 
                             plot_2_title = "d)")
 
-## create Fig. 8 
+## create Fig. 8
 Fig_8 <- gridExtra::arrangeGrob(
   grobs = c(Fig_8_a_b, 
             Fig_8_c_d), 
@@ -806,13 +814,13 @@ Fig_8 <- gridExtra::arrangeGrob(
   ncol = 2)
 
 ## save Fig. 8
-ggsave(file = "Output_Graphics/Fig_8.png", 
+ggsave(file = "Output_Graphics/Fig_7.png", 
        Fig_8, 
        width = 16, 
        height = 16, 
        units = "cm") 
 
-## plot Fig. 8 
+## plot Fig. 8
 gridExtra::grid.arrange(
   grobs = c(Fig_8_a_b, 
             Fig_8_c_d), 
@@ -822,6 +830,41 @@ gridExtra::grid.arrange(
 ## keep environment tidy 
 rm(Fig_8_a_b, 
    Fig_8_c_d)
+
+```
+
+# Discussion 
+
+Relative Ratio for ML1\_\_Jacowitz_Births
+
+```{r}
+
+## create summary object 
+summary_Jacowitz_Births <- summary(IPD_MA_brms$ML1__Jacowitz_Births)
+
+## store information from the VCOV matrix 
+tau_CM <- summary_Jacowitz_Births$random$Data_Collection_Site$Estimate[1]
+tau_MD <- summary_Jacowitz_Births$random$Data_Collection_Site$Estimate[2]
+ISC <- summary_Jacowitz_Births$random$Data_Collection_Site$Estimate[3]
+mu_CM <- summary_Jacowitz_Births$fixed$Estimate[1]
+mu_MD <- summary_Jacowitz_Births$fixed$Estimate[2]
+mu_TM <- mu_CM + mu_MD
+
+## tau_TM = sqrt( tau_CM^2 + tau_MD^2 + 2 * ISC * tau_CM * tau_MD )
+tau_TM <- sqrt( tau_CM^2 + tau_MD^2 + 2 * ISC * tau_CM * tau_MD )
+
+## calculate relative ratio
+(tau_TM/mu_TM)/(tau_CM/mu_CM)
+
+## keep environment tidy 
+rm(ISC, 
+   mu_CM,  
+   mu_MD, 
+   mu_TM,
+   summary_Jacowitz_Births,
+   tau_CM, 
+   tau_MD, 
+   tau_TM)
 
 ```
 
