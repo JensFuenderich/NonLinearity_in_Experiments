@@ -13,6 +13,7 @@ editor: visual
 
 ## Library Loading
 packages <- c("brms", 
+              "confintr",
               "flextable",
               "ggplot2",
               "dplyr",
@@ -61,6 +62,18 @@ apply(as.matrix("MetaPipeX"), MARGIN = 1, FUN = function(x) {
   }
 })
 
+## to make dmetar workY
+
+install.packages("MuMIn", type = "binary")
+if (!require("remotes")) {
+  install.packages("remotes")
+}
+remotes::install_github("MathiasHarrer/dmetar")
+
+
+
+
+
 ## keep the environment tidy 
 rm(packages)
 
@@ -70,41 +83,12 @@ rm(packages)
 
 ```{r}
 
-## source the function for Fig. 2, 3, 7 & 8
+## source the functions from the folder Custom_Functions
 source("Custom_Functions/MD_heterogeneity_plots.R")
-
-```
-
-## Download Multi-Lab Data
-
-```{r}
-
-## download data as rds object from DRIPHT Repository (https://osf.io/g2fzq) 
-rds_download <- osfr::osf_retrieve_file("2nw6v") %>% 
-  osfr::osf_download(., 
-                     path = file.path("Input_Data/rds"))
-
-## import the list 
-IPD_list <- readRDS(rds_download$local_path)
-
-## store IPD per data-set as csv files 
-invisible(
- sapply(
-  names(IPD_list$IPD), 
-  function(name){
-    readr::write_csv(IPD_list$IPD[[name]], 
-                 file = paste(
-                   "Input_Data/", "csv/", # path 
-                   paste(name, ".csv", sep = ""), # file name
-                   sep = ""))
-  }) 
-)
-
-## keep the environment tidy 
-rm(
-  rds_download, 
-  IPD_list
-)
+source("Custom_Functions/MD_heterogeneity_plot_1.R")
+source("Custom_Functions/MD_heterogeneity_plot_2.R")
+source("Custom_Functions/descriptors_control_group_design.R")
+source("Custom_Functions/descriptors_reference_group_design.R")
 
 ```
 
@@ -115,62 +99,118 @@ rm(
 ```{r}
 
 ## Wright's model: y = K * x^n 
+## I slightly adapted the model so it makes a prettier picture 
 ## set parameters 
 K <- 1
 n <- 0.1
 x <- seq(from = 1, to = 25, by = 0.01)
-y <- K * x^n 
+y <- K * x^n + 0.2
 
 ## store x and y in a df for plotting 
-Fig_1_data <- data.frame(
+Fig_01.1_data <- data.frame(
   x = x, 
   y = y
 )
 
-## create Fig. 1
-Fig_1 <- ggplot(data = Fig_1_data, 
+
+## Wright's model: y = K * x^n 
+## I slightly adapted the model so it makes a prettier picture 
+## set parameters 
+K <- 0.0006
+n <- 0.5
+x <- seq(from = 1, to = 25, by = 0.01)
+y <- K * x^(1/n) + 1.1
+
+## store x and y in a df for plotting 
+Fig_01.2_data <- data.frame(
+  x = x, 
+  y = y
+)
+
+## create Fig. 01
+Fig_01 <- ggplot(data = Fig_01.1_data, 
        aes(x = x, 
            y = y)) + 
-  geom_point() + 
-  geom_segment(aes(x = 2.5, y = 1.1,
-                   xend = 7.5, yend = 1.1)) +
-  geom_segment(aes(x = 7.5, y = 1.1,
-                   xend = 7.5, yend = 1.225), 
+  geom_point(color = "#DF536B") + 
+  geom_segment(x = 2.5, y = 1.295,
+               xend = 7.5, yend = 1.295) +
+  geom_segment(x = 7.5, y = 1.295,
+               xend = 7.5, yend = 1.425, 
                linetype = 2) +
-  geom_segment(aes(x = 15, y = 1.31,
-                   xend = 20, yend = 1.31)) +
-  geom_segment(aes(x = 20, y = 1.31,
-                   xend = 20, yend = 1.35), 
+  geom_segment(x = 15, y = 1.51,
+               xend = 20, yend = 1.51) +
+  geom_segment(x = 20, y = 1.51,
+               xend = 20, yend = 1.55, 
                linetype = 2) +
-  geom_point(aes(x = 2.5, y = 1.1), shape = 16, size = 6, color = "black") +
-  geom_point(aes(x = 7.5, y = 1.225), shape = 1, size = 6, color = "black") +
-  geom_point(aes(x = 7.5, y = 1.225), shape = 16, size = 6, color = "grey") +
-  geom_point(aes(x = 15, y = 1.31), shape = 16, size = 6, color = "black") +
-  geom_point(aes(x = 20, y = 1.35), shape = 1, size = 6, color = "black") +
-  geom_point(aes(x = 20, y = 1.35), shape = 16, size = 6, color = "grey") +
-  xlab(label = "amount of algebra training") + 
-  ylab(label = "ability to solve algebraic equation") + 
+  geom_point(x = 2.5, y = 1.295, 
+             shape = 16, size = 6, color = "black") +
+  geom_point(x = 7.5, y = 1.425, 
+             shape = 1, size = 6, color = "black") +
+  geom_point(x = 7.5, y = 1.425, 
+             shape = 16, size = 6, color = "grey") +
+  geom_point(x = 15, y = 1.51, 
+             shape = 16, size = 6, color = "black") +
+  geom_point(x = 20, y = 1.55, 
+             shape = 1, size = 6, color = "black") +
+  geom_point(x = 20, y = 1.55, 
+             shape = 16, size = 6, color = "grey") +
+  xlab(label = "sociometric status") + 
+  ylab(label = "social well-being") + 
   theme_minimal() + 
   theme(axis.text.x = element_blank(),
         axis.text.y = element_blank()) + 
   annotate("text", label = "Delta", parse = TRUE,
-           x = 8.5, y = 1.165, size = 6) +
-  annotate("text", label = "i = 1", 
-           x = 9.4, y = 1.155, size = 3) +
+           x = 8.5, y = 1.35, size = 6) +
+  annotate("text", label = "1", 
+           x = 9.1, y = 1.34, size = 3) +
   annotate("text", label = "Delta", parse = TRUE,
-           x = 21, y = 1.33, size = 6) +
-  annotate("text", label = "i = 2", 
-           x = 21.9, y = 1.32, size = 3)
+           x = 21, y = 1.524, size = 6) +
+  annotate("text", label = "2", 
+           x = 21.6, y = 1.514, size = 3) + 
+    geom_point(data = Fig_01.2_data, 
+               aes(x = x, 
+                   y = y), 
+               color = "#2297E6") + 
+    geom_segment(x = 5, y = 1.115,
+                 xend = 10, yend = 1.115) +
+    geom_segment(x = 10, y = 1.115,
+                 xend = 10, yend = 1.16, 
+                 linetype = 2) +
+    geom_segment(x = 17.5, y = 1.28,
+                 xend = 22.5, yend = 1.28) +
+    geom_segment(x = 22.5, y = 1.28,
+                 xend = 22.5, yend = 1.4, 
+                 linetype = 2) +
+    geom_point(x = 5, y = 1.115, 
+               shape = 16, size = 6, color = "black") +
+    geom_point(x = 10, y = 1.16, 
+               shape = 1, size = 6, color = "black") +
+    geom_point(x = 10, y = 1.16, 
+               shape = 16, size = 6, color = "grey") +
+    geom_point(x = 17.5, y = 1.28, 
+               shape = 16, size = 6, color = "black") +
+    geom_point(x = 22.5, y = 1.4, 
+               shape = 1, size = 6, color = "black") +
+    geom_point(x = 22.5, y = 1.4, 
+               shape = 16, size = 6, color = "grey") +
+  annotate("text", label = "Delta", parse = TRUE,
+           x = 11, y = 1.13, size = 6) +
+  annotate("text", label = "1", 
+           x = 11.6, y = 1.12, size = 3) +
+  annotate("text", label = "Delta", parse = TRUE,
+           x = 23.5, y = 1.34, size = 6) +
+  annotate("text", label = "2", 
+           x = 24.1, y = 1.33, size = 3) 
 
-## save Fig. 1
-ggsave(file = "Output_Graphics/Fig_1.png", 
-       Fig_1, 
+## save Fig. 01
+ggsave(file = "Output_Graphics/Fig_01.png", 
+       Fig_01, 
        width = 16, 
        height = 9, 
        units = "cm", 
        bg='#ffffff') 
 
-Fig_1
+Fig_01
 
 ## keep the environment tidy 
 rm(K, n, x, y)
@@ -180,8 +220,6 @@ rm(K, n, x, y)
 ## 
 
 ## Fig. 2 a) & b)
-
-Some information from this chunk is used in that of Fig. 3 as well.
 
 ```{r}
 
@@ -219,19 +257,18 @@ Fig_2_data <- data.frame(
   MD = sampling_results[,2]
 )
 
-## create Fig. 2
-Fig_2 <- MD_heterogeneity_plots(Data_Collection_Site = Fig_2_data$Data_Collection_Site, 
-                                CM = Fig_2_data$CM,
-                                TM = Fig_2_data$CM + Fig_2_data$MD)
+## create Fig. 02
+Fig_02 <- MD_heterogeneity_plots(
+  Data_Collection_Site = Fig_2_data$Data_Collection_Site, 
+  CM = Fig_2_data$CM,
+  TM = Fig_2_data$CM + Fig_2_data$MD)
 
-## save Fig. 2
-ggsave(file = "Output_Graphics/Fig_2.png", 
-       Fig_2, 
+## save Fig. 02
+ggsave(file = "Output_Graphics/Fig_02.png", 
+       Fig_02, 
        width = 16, 
        height = 8, 
        units = "cm") 
-
-Fig_2
 
 ## keep the environment tidy 
 rm(CM_tau, 
@@ -242,143 +279,358 @@ rm(CM_tau,
 
 ```
 
-## Fig. 3 a) & b)
-
-Some information from the previous chunk (Fig. 2) is used in the following chunk as well.
+## Fig. 3
 
 ```{r}
 
+### set background colors
+color_uneven_rows <- "#56B4E910"
+color_even_rows <- "#56B4E919"
 
-### CM and MD uncorrelated 
+color_uneven_rows <- "#56B4E910"
+color_even_rows <- "#56B4E919"
+column_names_color <- "#56B4E930"
 
-## set new heterogeneity for CM
-CM_tau <- 0.01
+#### create data 
 
-## create df
-Fig_3_data <- Fig_2_data
+### row 1 
 
-set.seed(12)
-## sample data 
-Fig_3_data$CM <- rnorm(n = k, 
-                       mean = CM_mu, 
-                       sd = CM_tau)
-Fig_3_data$MD <- rnorm(n = k, 
-                       mean = MD_mu, 
-                       sd = MD_tau)
+control_groups <- c(0.25, 0.7, 1.5, 3)
 
-## create Fig. 3
-Fig_3 <- MD_heterogeneity_plots(Data_Collection_Site = Fig_3_data$Data_Collection_Site, 
-                                CM = Fig_3_data$CM, 
-                                TM = Fig_3_data$CM + Fig_3_data$MD)
+x <- c(control_groups, 
+       control_groups + 1) 
 
-## save Fig. 3
-ggsave(file = "Output_Graphics/Fig_3.png", 
-       Fig_3, 
+plot_df_row_1 <- data.frame(
+  x = x, 
+  y = log2(x) + 4
+)
+
+### row 2
+
+control_groups <- c(0, 1, 1.75, 2.5)
+
+x <- c(control_groups, 
+       control_groups + 1) 
+
+plot_df_row_2 <- data.frame(
+  x = x, 
+  y = 0.25*x^2 + 0.5
+)
+
+#### plots for column A
+
+## create the plot for row 1 column A
+row_1__col_A <- ggplot() + 
+  ggplot2::xlim(1,5) + 
+  ggplot2::ylim(1,5) +
+  theme_void() +
+  annotate(
+    "text", label = "tau[MD] > 0",
+    x = 3, y = 4.5, size = 4, colour = "black", parse = TRUE
+  ) +
+  annotate(
+    "text", label = "tau[CM] > 0",
+    x = 3, y = 3.5, size = 4, colour = "black", parse = TRUE
+  ) +
+  annotate(
+    "text", label = "ISC = -1",
+    x = 3, y = 2.5, size = 4, colour = "black"
+  ) + 
+  annotate(
+    "text", label = "r[s]~`=`~1", 
+    x = 3, y = 1.5, size = 4, colour = "black", parse = TRUE
+  ) +
+  theme(
+    plot.background = element_rect(fill = color_uneven_rows, color = color_uneven_rows)
+  )
+
+## create the plot for row 2 column A
+row_2__col_A <- ggplot() + 
+  ggplot2::xlim(1,5) + 
+  ggplot2::ylim(1,5) +
+  theme_void() +
+  annotate(
+    "text", label = "tau[MD] > 0",
+    x = 3, y = 4.5, size = 4, colour = "black", parse = TRUE
+  ) +
+  annotate(
+    "text", label = "tau[CM] > 0", # "CM: heterogeneous",
+    x = 3, y = 3.5, size = 4, colour = "black", parse = TRUE
+  ) +
+  annotate(
+    "text", label = "ISC = 1",
+    x = 3, y = 2.5, size = 4, colour = "black", 
+  ) + 
+  annotate(
+    "text", label = "r[s]~`=`~1", 
+    x = 3, y = 1.5, size = 4, colour = "black", parse = TRUE
+  ) +
+  theme(
+    plot.background = element_rect(fill = color_even_rows, color = color_even_rows)
+  )
+
+
+#### plots for column B
+
+## create the plot for row 1 column B
+row_1__col_B <- MD_heterogeneity_plot_2(Data_Collection_Site = 1:4, 
+                                        CM = plot_df_row_1$y[1:4], 
+                                        TM = plot_df_row_1$y[5:8], 
+                                        DV_lim_lower = 1,
+                                        DV_lim_upper = 6.5, 
+                                        label_short = TRUE, 
+                                        background_color = color_uneven_rows, 
+                                        y_lab_text_short = "DV")
+
+## create the plot for row 2 column B
+row_2__col_B <- MD_heterogeneity_plot_2(Data_Collection_Site = 1:4, 
+                                        CM = plot_df_row_2$y[1:4], 
+                                        TM = plot_df_row_2$y[5:8], 
+                                        DV_lim_lower = 0,#0.5, 
+                                        DV_lim_upper = 4, 
+                                        label_short = TRUE, 
+                                        background_color = color_even_rows, 
+                                        y_lab_text_short = "DV")
+
+
+#### plots for column C 
+
+## create the plot for row 1 column C
+row_1__col_C <- MD_heterogeneity_plot_1(Data_Collection_Site = 1:4, 
+                                        CM = plot_df_row_1$y[1:4], 
+                                        TM = plot_df_row_1$y[5:8], 
+                                        DV_lim_lower = 0,
+                                        DV_lim_upper = 6.5, 
+                                        label_short = TRUE, 
+                                        background_color = color_uneven_rows, 
+                                        x_lab_text_short = "",
+                                        y_lab_text_short = "DV")
+
+## create the plot for row 2 column C
+row_2__col_C <- MD_heterogeneity_plot_1(Data_Collection_Site = 1:4, 
+                                        CM = plot_df_row_2$y[1:4], 
+                                        TM = plot_df_row_2$y[5:8], 
+                                        DV_lim_lower = 0,#0.5, 
+                                        DV_lim_upper = 4, 
+                                        label_short = TRUE, 
+                                        background_color = color_even_rows, 
+                                        x_lab_text_short = "",
+                                        y_lab_text_short = "DV")
+
+#### plots for column D
+
+## create the plot for row 1 column D
+plot_curve <- data.frame(
+  x = seq(from = 0, to = 7, by = 0.001), 
+  y = log2(seq(from = 0, to = 7, by = 0.001)) + 4
+)
+
+row_1__col_D <- ggplot(data = plot_df_row_1, 
+                       aes(x = x, y = y)) +
+  geom_point() + 
+  geom_point(data = plot_curve, 
+             aes(x = x, y = y), size = 0.1) +
+  geom_segment(aes(x = plot_df_row_1$x[1], 
+                   y = plot_df_row_1$y[1], 
+                   xend = plot_df_row_1$x[5], 
+                   yend = plot_df_row_1$y[1])) +
+  geom_segment(aes(x = plot_df_row_1$x[5], 
+                   y = plot_df_row_1$y[1], 
+                   xend = plot_df_row_1$x[5], 
+                   yend = plot_df_row_1$y[5])) +
+  geom_segment(aes(x = plot_df_row_1$x[2], 
+                   y = plot_df_row_1$y[2], 
+                   xend = plot_df_row_1$x[6], 
+                   yend = plot_df_row_1$y[2])) +
+  geom_segment(aes(x = plot_df_row_1$x[6], 
+                   y = plot_df_row_1$y[2], 
+                   xend = plot_df_row_1$x[6], 
+                   yend = plot_df_row_1$y[6])) +
+  geom_segment(aes(x = plot_df_row_1$x[3], 
+                   y = plot_df_row_1$y[3], 
+                   xend = plot_df_row_1$x[7], 
+                   yend = plot_df_row_1$y[3])) +
+  geom_segment(aes(x = plot_df_row_1$x[7], 
+                   y = plot_df_row_1$y[3], 
+                   xend = plot_df_row_1$x[7], 
+                   yend = plot_df_row_1$y[7])) +
+  geom_segment(aes(x = plot_df_row_1$x[4], 
+                   y = plot_df_row_1$y[4], 
+                   xend = plot_df_row_1$x[8], 
+                   yend = plot_df_row_1$y[4])) +
+  geom_segment(aes(x = plot_df_row_1$x[8], 
+                   y = plot_df_row_1$y[4], 
+                   xend = plot_df_row_1$x[8], 
+                   yend = plot_df_row_1$y[8])) +
+  xlim(c(0,5)) + 
+  ylim(c(0,6.7)) + 
+  theme_minimal() + 
+  theme(axis.text.x=element_blank(), 
+        plot.background = element_rect(fill = color_uneven_rows, color = "#CCCCCC00"), 
+        panel.grid.major = element_line(color = "#AAAAAA70"), 
+        panel.grid.minor = element_line(color = "#AAAAAA00")) +
+  ylab(label = "") +
+  xlab(label = "continuous predictor")
+
+
+## create the plot for row 2 column D
+plot_curve <- data.frame(
+  x = seq(from = 0, to = 7, by = 0.001), 
+  y = 0.25 * (seq(from = 0, to = 7, by = 0.001))^2 + 0.5
+)
+
+row_2__col_D <- ggplot(data = plot_df_row_2, 
+                       aes(x = x, y = y)) +
+  geom_point() + 
+  geom_point(data = plot_curve, 
+             aes(x = x, y = y), size = 0.1) +
+  geom_segment(aes(x = plot_df_row_2$x[1], 
+                   y = plot_df_row_2$y[1], 
+                   xend = plot_df_row_2$x[5], 
+                   yend = plot_df_row_2$y[1])) +
+  geom_segment(aes(x = plot_df_row_2$x[5], 
+                   y = plot_df_row_2$y[1], 
+                   xend = plot_df_row_2$x[5], 
+                   yend = plot_df_row_2$y[5])) +
+  geom_segment(aes(x = plot_df_row_2$x[2], 
+                   y = plot_df_row_2$y[2], 
+                   xend = plot_df_row_2$x[6], 
+                   yend = plot_df_row_2$y[2])) +
+  geom_segment(aes(x = plot_df_row_2$x[6], 
+                   y = plot_df_row_2$y[2], 
+                   xend = plot_df_row_2$x[6], 
+                   yend = plot_df_row_2$y[6])) +
+  geom_segment(aes(x = plot_df_row_2$x[3], 
+                   y = plot_df_row_2$y[3], 
+                   xend = plot_df_row_2$x[7], 
+                   yend = plot_df_row_2$y[3])) +
+  geom_segment(aes(x = plot_df_row_2$x[7], 
+                   y = plot_df_row_2$y[3], 
+                   xend = plot_df_row_2$x[7], 
+                   yend = plot_df_row_2$y[7])) +
+  geom_segment(aes(x = plot_df_row_2$x[4], 
+                   y = plot_df_row_2$y[4], 
+                   xend = plot_df_row_2$x[8], 
+                   yend = plot_df_row_2$y[4])) +
+  geom_segment(aes(x = plot_df_row_2$x[8], 
+                   y = plot_df_row_2$y[4], 
+                   xend = plot_df_row_2$x[8], 
+                   yend = plot_df_row_2$y[8])) +
+  xlim(c(0,5)) + 
+  ylim(c(0,4)) + 
+  theme_minimal() + 
+  theme(axis.text.x=element_blank(), 
+        plot.background = element_rect(fill = color_even_rows, color = "#CCCCCC00"), 
+        panel.grid.major = element_line(color = "#AAAAAA70"), 
+        panel.grid.minor = element_line(color = "#AAAAAA00")) +
+  ylab(label = "") +
+  xlab(label = "continuous predictor")
+
+#### plots for the grid 
+
+## helper function for row name plots 
+helper_fun <- function(label, background_color){
+  ggplot() + 
+  ggplot2::xlim(0,7) + 
+  ggplot2::ylim(0,7) +
+  theme_void() +
+  annotate(
+    "text", label = label,
+    x = 3, y = 4, size = 4, color = "black"
+  ) +
+  theme(
+    plot.background = element_rect(fill = background_color, color = "#CCCCCC00")
+  )
+}
+
+## row names 
+plot_grid_name_row_1 <- helper_fun(
+  label = "1", 
+  background_color = color_uneven_rows)
+##
+plot_grid_name_row_2 <- helper_fun(
+  label = "2", 
+  background_color = color_even_rows)
+
+## create ID column name  
+plot_grid_name_col_0 <- ggplot() + 
+  ggplot2::xlim(0,7) + 
+  ggplot2::ylim(0,7) +
+  theme_void() +
+  annotate(
+    "text", label = "",
+    x = 3, y = 4, size = 4, color = "black"
+  ) +
+  theme(
+    plot.background = element_rect(fill = column_names_color, # "#CCCCCC90", 
+                                   color = "#CCCCCC00"
+    )
+  )
+
+## create helper for col A-D
+helper_fun <- function(label, background_color){
+  ggplot() + 
+  ggplot2::xlim(0,7) + 
+  ggplot2::ylim(0,7) +
+  theme_void() +
+  annotate(
+    "text", label = label,
+    x = 3, y = 4, size = 4, color = "black"
+  ) +
+  theme(
+    plot.background = element_rect(fill = background_color, # "#CCCCCC90", 
+                                   color = "#CCCCCC00"
+    )
+  )
+}
+
+##
+plot_grid_name_col_A <- helper_fun(
+  label = "A", 
+  background_color = column_names_color)
+##
+plot_grid_name_col_B <- helper_fun(
+  label = "B", 
+  background_color = column_names_color)
+##
+plot_grid_name_col_C <- helper_fun(
+  label = "C", 
+  background_color = column_names_color)
+##
+plot_grid_name_col_D <- helper_fun(
+  label = "D", 
+  background_color = column_names_color)
+
+## create Fig. 03
+Fig_03 <- gridExtra::grid.arrange(
+  grobs = list(
+    plot_grid_name_col_0, plot_grid_name_col_A, plot_grid_name_col_B, plot_grid_name_col_C,plot_grid_name_col_D,
+    plot_grid_name_row_1, row_1__col_A, row_1__col_B, row_1__col_C, row_1__col_D,  
+    plot_grid_name_row_2, row_2__col_A, row_2__col_B, row_2__col_C, row_2__col_D), 
+  # ncol = 4, 
+  widths = c(0.2, 0.6, 1, 1.1, 1.2), 
+  heights = c(0.2, 1, 1),
+  layout_matrix = rbind(c(1:5),
+                        c(6:10), 
+                        c(11:15)))
+
+## save Fig. 03
+ggsave(file = "Output_Graphics/Fig_03.png", 
+       Fig_03, 
        width = 16, 
-       height = 8, 
-       units = "cm") 
+       height = 4 * 2.25, 
+       units = "cm", 
+       bg='#ffffff') 
 
-Fig_3
-
-## keep the environment tidy 
-rm(CM_mu, 
-   CM_tau, 
-   k, 
-   MD_mu,
-   MD_tau)
 
 ```
 
-## Fig. 4 a) & b)
+## Fig. 4
 
 ```{r}
 
-
-## Wright's model: y = K * x^n 
-## set parameters 
-K <- 2
-n <- 4
-x <- seq(from = 1, to = 25, by = 0.01)
-y <- K * x^n 
-
-## save x and y in df for plotting 
-Fig_4_a_data <- data.frame(
-  x = x, 
-  y = y
-)
-
-## create Fig. 4 a)
-Fig_4_a <- ggplot(data = Fig_4_a_data, 
-                  aes(x = x, y = y)) + 
-  geom_point() + 
-  xlab(label = "independent variable") + 
-  ylab(label = "a)") +
-  theme_minimal() + 
-  theme(axis.title.x = element_blank(), 
-        axis.title.y = element_text(angle = 0), 
-        axis.text.x = element_blank(), 
-        axis.text.y = element_blank())
-
-## log function: 1 / (1 + exp(-x)) 
-## create new x and y 
-x <- seq(from = -5, to = 5, by = 0.01)
-y <- 10 + 1 / (1 + exp(-x)) 
-
-## save x and y in df for plotting 
-Fig_4_b_data <- data.frame(
-  x = x, 
-  y = y
-)
-
-## create Fig. 4 b) 
-Fig_4_b <- ggplot(data = Fig_4_b_data, 
-                  aes(x = x, y = y)) + 
-  geom_point() + 
-  # xlab(label = "independent variable") + 
-  ylab(label = "b)") +
-  theme_minimal() + 
-  theme(axis.title.x = element_blank(), 
-        axis.title.y = element_text(angle = 0), 
-        axis.text.x = element_blank(), 
-        axis.text.y = element_blank())
-
-## list with plots for Fig. 4
-Fig_4_list <- list(Fig_4_a, Fig_4_b)
-
-## create Fig. 4
-Fig_4 <- gridExtra::arrangeGrob(
-  grobs = Fig_4_list, 
-  nrow = 2, 
-  ncol = 1, 
-  bottom = "independent variable",
-  left = "dependent variable")
-
-## save Fig. 4
-ggsave(file = "Output_Graphics/Fig_4.png", 
-       Fig_4, 
-       width = 16, 
-       height = 9, 
-       units = "cm") 
-
-## plot Fig. 4
-gridExtra::grid.arrange(grobs = Fig_4_list, 
-                        nrow = 2, 
-                        ncol = 1, 
-                        bottom = "independent variable",
-                        left = "dependent variable")
-
-## keep the environment tidy 
-rm(K, n, x, y, 
-   Fig_4_list)
-
-```
-
-## Fig. 5
-
-```{r}
-
-## create Fig. 5
-Fig_5 <- ggplot() + 
+## create Fig. 04
+Fig_04 <- ggplot() + 
   geom_point() + 
   geom_segment(aes(x = 1, y = 1.25, xend = 7, yend = 1.25), 
                linewidth = 1) + 
@@ -422,7 +674,7 @@ Fig_5 <- ggplot() +
   annotate(geom = "text", x = 7, y = 0.3, label="7") +
   annotate(geom = "text", x = 1.75, y = 2.25, label="rating scale") +
   xlab(label = "latent dependent variable") +
-  ylab(label = "sample") +
+  ylab(label = "replication") +
   theme_light() + 
   scale_x_continuous(breaks = seq(from = 0, to = 9, by = 1), limits = c(0,9)) +
   theme(# axis.title.x = element_blank(),
@@ -430,19 +682,634 @@ Fig_5 <- ggplot() +
         axis.text.x = element_blank(), 
         axis.text.y = element_blank()) 
 
-## save Fig. 5
-ggsave(file = "Output_Graphics/Fig_5.png", 
-       Fig_5, 
+## save Fig. 04
+ggsave(file = "Output_Graphics/Fig_04.png", 
+       Fig_04, 
        width = 16, 
        height = 9, 
        units = "cm") 
 
-## plot Fig. 5
-Fig_5
+```
+
+## Fig. 5
+
+```{r}
+
+### set background colors
+color_uneven_rows <- "#56B4E910"
+color_even_rows <- "#56B4E919"
+column_names_color <- "#56B4E930"
+
+
+#### create data 
+
+### row 1 
+
+## create control group data for x
+control_groups <- 1:4 - 1:4/3.5
+
+## create vector with control & treatment group data for x
+x <- c(control_groups, 
+       control_groups + 1) 
+
+## create df with x and y
+plot_df_row_1 <- data.frame(
+  x = x, 
+  y = 1 * x
+)
+
+
+#### plots for column A
+
+## create the plot for row 1 column A
+row_1__col_A <- ggplot() + 
+  ggplot2::xlim(1,5) + 
+  ggplot2::ylim(1,5) +
+  theme_void() +
+  annotate(
+    "text", label = "tau[MD]~`=`~0",
+    x = 3, y = 4.5, size = 4, colour = "black", parse = TRUE
+  ) +
+  annotate(
+    "text", label = "tau[CM] > 0",
+    x = 3, y = 3.5, size = 4, colour = "black", parse = TRUE
+  ) +
+  annotate(
+    "text", label = "ISC = 0",
+    x = 3, y = 2.5, size = 4, colour = "black"
+  ) + 
+  annotate(
+    "text", label = "r[s]~`=`~1", 
+    x = 3, y = 1.5, size = 4, colour = "black", parse = TRUE,
+  ) +
+  theme(
+    plot.background = element_rect(fill = color_uneven_rows, color = color_uneven_rows)
+  )
+
+
+#### plots for column B
+
+## create the plot for row 1 column B
+row_1__col_B <- MD_heterogeneity_plot_2(Data_Collection_Site = 1:4, 
+                                        CM = plot_df_row_1$y[1:4], 
+                                        TM = plot_df_row_1$y[5:8], 
+                                        DV_lim_lower = 0,#0.5, 
+                                        DV_lim_upper = 4.5, 
+                                        label_short = TRUE, 
+                                        background_color = color_uneven_rows, 
+                                        y_lab_text_short = "DV")
+
+#### plots for column C 
+
+## create the plot for row 1 column C
+row_1__col_C <- MD_heterogeneity_plot_1(Data_Collection_Site = 1:4, 
+                                        CM = plot_df_row_1$y[1:4], 
+                                        TM = plot_df_row_1$y[5:8], 
+                                        DV_lim_lower = 0,#0.5, 
+                                        DV_lim_upper = 4.5, 
+                                        label_short = TRUE, 
+                                        background_color = color_uneven_rows, 
+                                        x_lab_text_short = "",
+                                        y_lab_text_short = "DV")
+
+#### plots for column D
+
+## create the plot for row 1 column D
+row_1__col_D <- ggplot(data = plot_df_row_1, 
+                       aes(x = x, y = y)) +
+  geom_point() + 
+  geom_abline(intercept = 0, slope = 1) +
+  geom_segment(aes(x = plot_df_row_1$x[1], 
+                   y = plot_df_row_1$y[1], 
+                   xend = plot_df_row_1$x[5], 
+                   yend = plot_df_row_1$y[1])) +
+  geom_segment(aes(x = plot_df_row_1$x[5], 
+                   y = plot_df_row_1$y[1], 
+                   xend = plot_df_row_1$x[5], 
+                   yend = plot_df_row_1$y[5])) +
+  geom_segment(aes(x = plot_df_row_1$x[2], 
+                   y = plot_df_row_1$y[2], 
+                   xend = plot_df_row_1$x[6], 
+                   yend = plot_df_row_1$y[2])) +
+  geom_segment(aes(x = plot_df_row_1$x[6], 
+                   y = plot_df_row_1$y[2], 
+                   xend = plot_df_row_1$x[6], 
+                   yend = plot_df_row_1$y[6])) +
+  geom_segment(aes(x = plot_df_row_1$x[3], 
+                   y = plot_df_row_1$y[3], 
+                   xend = plot_df_row_1$x[7], 
+                   yend = plot_df_row_1$y[3])) +
+  geom_segment(aes(x = plot_df_row_1$x[7], 
+                   y = plot_df_row_1$y[3], 
+                   xend = plot_df_row_1$x[7], 
+                   yend = plot_df_row_1$y[7])) +
+  geom_segment(aes(x = plot_df_row_1$x[4], 
+                   y = plot_df_row_1$y[4], 
+                   xend = plot_df_row_1$x[8], 
+                   yend = plot_df_row_1$y[4])) +
+  geom_segment(aes(x = plot_df_row_1$x[8], 
+                   y = plot_df_row_1$y[4], 
+                   xend = plot_df_row_1$x[8], 
+                   yend = plot_df_row_1$y[8])) +
+  xlim(c(0,5)) + 
+  ylim(c(0,4.65)) + 
+  theme_minimal() + 
+  theme(axis.text.x=element_blank(), 
+        plot.background = element_rect(fill = color_uneven_rows, color = "#CCCCCC00"), 
+        panel.grid.major = element_line(color = "#AAAAAA70"), 
+        panel.grid.minor = element_line(color = "#AAAAAA00")) +
+  ylab(label = "") +
+  xlab(label = "continuous predictor")
+
+#### plots for the grid 
+
+## helper function for row name plots 
+helper_fun <- function(label, background_color){
+  ggplot() + 
+  ggplot2::xlim(0,7) + 
+  ggplot2::ylim(0,7) +
+  theme_void() +
+  annotate(
+    "text", label = label,
+    x = 3, y = 4, size = 4, color = "black"
+  ) +
+  theme(
+    plot.background = element_rect(fill = background_color, color = "#CCCCCC00")
+  )
+}
+
+## row names 
+plot_grid_name_row_1 <- helper_fun(
+  label = "1", 
+  background_color = color_uneven_rows)
+
+## create ID column name  
+plot_grid_name_col_0 <- ggplot() + 
+  ggplot2::xlim(0,7) + 
+  ggplot2::ylim(0,7) +
+  theme_void() +
+  annotate(
+    "text", label = "",
+    x = 3, y = 4, size = 4, color = "black"
+  ) +
+  theme(
+    plot.background = element_rect(fill = column_names_color, # "#CCCCCC90", 
+                                   color = "#CCCCCC00"
+    )
+  )
+
+## create helper for col A-D
+helper_fun <- function(label, background_color){
+  ggplot() + 
+  ggplot2::xlim(0,7) + 
+  ggplot2::ylim(0,7) +
+  theme_void() +
+  annotate(
+    "text", label = label,
+    x = 3, y = 4, size = 4, color = "black"
+  ) +
+  theme(
+    plot.background = element_rect(fill = background_color, # "#CCCCCC90", 
+                                   color = "#CCCCCC00"
+    )
+  )
+}
+
+##
+plot_grid_name_col_A <- helper_fun(
+  label = "A", 
+  background_color = column_names_color)
+##
+plot_grid_name_col_B <- helper_fun(
+  label = "B", 
+  background_color = column_names_color)
+##
+plot_grid_name_col_C <- helper_fun(
+  label = "C", 
+  background_color = column_names_color)
+##
+plot_grid_name_col_D <- helper_fun(
+  label = "D", 
+  background_color = column_names_color)
+
+
+## creating Fig. 05
+Fig_05 <- gridExtra::grid.arrange(
+  grobs = list(
+    plot_grid_name_col_0, plot_grid_name_col_A, plot_grid_name_col_B, plot_grid_name_col_C,plot_grid_name_col_D,
+    plot_grid_name_row_1, row_1__col_A, row_1__col_B, row_1__col_C, row_1__col_D), 
+  # ncol = 4, 
+  widths = c(0.2, 0.6, 1, 1.1, 1.2), 
+  heights = c(0.2, 1),
+  layout_matrix = rbind(c(1:5),
+                        c(6:10)))
+
+## save Fig. 05
+ggsave(file = "Output_Graphics/Fig_05.png", 
+       Fig_05, 
+       width = 16, 
+       height = 4 * 1.25, 
+       units = "cm", 
+       bg='#ffffff') 
+
+
+```
+
+## Fig. 6
+
+```{r}
+
+### set background colors
+color_uneven_rows <- "#56B4E910"
+color_even_rows <- "#56B4E919"
+column_names_color <- "#56B4E930"
+
+
+#### create data 
+
+### row 1
+
+control_groups <- c(0.2, 0.5, 1.3, 2, 3.2) 
+
+x <- c(control_groups, 
+       control_groups + c(1.6, 0.6, 1.6, 0.6, 0.6))
+
+plot_df_row_1 <- data.frame(
+  x = x, 
+  y = 1 * x
+)
+
+### row 2
+
+control_groups <- rep(1.5, times = 4)
+
+x <- c(control_groups, 
+       control_groups + seq(from = 0.5, to = 2, by = 0.5)) 
+
+plot_df_row_2 <- data.frame(
+  x = x, 
+  y = 1 * x, 
+  color = rep(c(0.8, 0.2), each = 4)
+)
+
+#### plots for column A
+
+
+## create the plot for row 1 column A
+row_1__col_A <- ggplot() + 
+  ggplot2::xlim(1,5) + 
+  ggplot2::ylim(1,5) +
+  theme_void() +
+  annotate(
+    "text", label = "tau[MD] > 0",
+    x = 3, y = 4.5, size = 4, colour = "black", parse = TRUE
+  ) +
+  annotate(
+    "text", label = "tau[CM] > 0",
+    x = 3, y = 3.5, size = 4, colour = "black", parse = TRUE
+  ) +
+  annotate(
+    "text", label = "ISC = 0",
+    x = 3, y = 2.5, size = 4, colour = "black"
+  ) + 
+  annotate(
+    "text", label = "r[s]~`<`~1", # label = "r_rank < 1",
+    x = 3, y = 1.5, size = 4, colour = "black", parse = TRUE,
+  ) +
+  theme(
+    plot.background = element_rect(fill = color_uneven_rows, color = color_uneven_rows)
+  )
+
+## create the plot for row 1 column A
+row_2__col_A <- ggplot() + 
+  ggplot2::xlim(1,5) + 
+  ggplot2::ylim(1,5) +
+  theme_void() +
+  annotate(
+    "text", label = "tau[MD] > 0",
+    x = 3, y = 4.5, size = 4, colour = "black", parse = TRUE
+  ) +
+  annotate(
+    "text", label = "tau[CM]~`=`~0",
+    x = 3, y = 3.5, size = 4, colour = "black", parse = TRUE
+  ) +
+  annotate(
+    "text", label = "ISC = 0",
+    x = 3, y = 2.5, size = 4, colour = "black"
+  ) + 
+  annotate(
+    "text", label = "r[s]~`=`~0", 
+    x = 3, y = 1.5, size = 4, colour = "black", parse = TRUE,
+  ) +
+  theme(
+    plot.background = element_rect(fill = color_even_rows, color = color_even_rows)
+  )
+
+#### plots for column B
+
+## create the plot for row 1 column B
+row_1__col_B <- MD_heterogeneity_plot_2(Data_Collection_Site = 1:5, 
+                                        CM = plot_df_row_1$y[1:5],
+                                        TM = plot_df_row_1$y[6:10],
+                                        DV_lim_lower = 0,#0.5, 
+                                        DV_lim_upper = 4.5, 
+                                        label_short = TRUE, 
+                                        background_color = color_uneven_rows, 
+                                        y_lab_text_short = "DV")
+
+## create the plot for row 2 column B
+row_2__col_B <- MD_heterogeneity_plot_2(Data_Collection_Site = 1:4, 
+                                        CM = plot_df_row_2$y[1:4],
+                                        TM = plot_df_row_2$y[5:8], 
+                                        DV_lim_lower = 0,#0.5, 
+                                        DV_lim_upper = 4.5, 
+                                        label_short = TRUE, 
+                                        background_color = color_even_rows, 
+                                        y_lab_text_short = "DV")
+
+
+#### plots for column C 
+
+## create the plot for row 1 column C
+row_1__col_C <- MD_heterogeneity_plot_1(Data_Collection_Site = 1:5, 
+                                        CM = plot_df_row_1$y[1:5], 
+                                        TM = plot_df_row_1$y[6:10], 
+                                        DV_lim_lower = 0,#0.5, 
+                                        DV_lim_upper = 4.5, 
+                                        label_short = TRUE, 
+                                        background_color = color_uneven_rows, 
+                                        x_lab_text_short = "",
+                                        y_lab_text_short = "DV")
+## create the plot for row 2 column C
+row_2__col_C <- MD_heterogeneity_plot_1(Data_Collection_Site = 1:4, 
+                                        CM = plot_df_row_2$y[1:4], 
+                                        TM = plot_df_row_2$y[5:8], 
+                                        DV_lim_lower = 0,#0.5, 
+                                        DV_lim_upper = 4.5, 
+                                        label_short = TRUE, 
+                                        background_color = color_even_rows, 
+                                        x_lab_text_short = "",
+                                        y_lab_text_short = "DV")
+
+
+#### plots for column D
+
+## create the plot for row 1 column D
+row_1__col_D <- ggplot(data = plot_df_row_1, 
+       aes(x = x, y = y)) +
+  geom_point() + 
+  geom_abline(intercept = 0, slope = 1) +
+  geom_segment(aes(x = x[1], 
+                   y = y[1], 
+                   xend = x[6], 
+                   yend = y[1])) +
+  geom_segment(aes(x = x[6], 
+                   y = y[1], 
+                   xend = x[6], 
+                   yend = y[6])) +
+  geom_segment(aes(x = x[2], 
+                   y = y[2], 
+                   xend = x[7], 
+                   yend = y[2])) +
+  geom_segment(aes(x = x[7], 
+                   y = y[2], 
+                   xend = x[7], 
+                   yend = y[7])) +
+  geom_segment(aes(x = x[3], 
+                   y = y[3], 
+                   xend = x[8], 
+                   yend = y[3])) +
+  geom_segment(aes(x = x[8], 
+                   y = y[3], 
+                   xend = x[8], 
+                   yend = y[8])) +
+  geom_segment(aes(x = x[4], 
+                   y = y[4], 
+                   xend = x[9], 
+                   yend = y[4])) +
+  geom_segment(aes(x = x[9], 
+                   y = y[4], 
+                   xend = x[9], 
+                   yend = y[9])) +
+  geom_segment(aes(x = x[5], 
+                   y = y[5], 
+                   xend = x[10], 
+                   yend = y[5])) +
+  geom_segment(aes(x = x[10], 
+                   y = y[5], 
+                   xend = x[10], 
+                   yend = y[10])) +
+  xlim(c(0,5)) + 
+  ylim(c(0,4.65)) + 
+  theme_minimal() + 
+  theme(axis.text.x=element_blank(), 
+        # axis.text.y=element_blank(), 
+        plot.background = element_rect(fill = color_uneven_rows, color = "#CCCCCC00"), 
+        panel.grid.major = element_line(color = "#AAAAAA70"), 
+        panel.grid.minor = element_line(color = "#AAAAAA00")) +
+  ylab(label = "") +
+  xlab(label = "continuous predictor")
+
+## create the plot for row 2 column D
+row_2__col_D <- ggplot(data = plot_df_row_2, 
+       aes(x = x, y = y)) +
+  geom_abline(intercept = 0, slope = 1) +
+  geom_segment(aes(x = x[1], 
+                   y = y[1], 
+                   xend = x[5], 
+                   yend = y[1]), 
+               alpha = 0.2) +
+  geom_segment(aes(x = x[5], 
+                   y = y[1], 
+                   xend = x[5], 
+                   yend = y[5]), 
+               alpha = 0.2) +
+  geom_segment(aes(x = x[2], 
+                   y = y[2], 
+                   xend = x[6], 
+                   yend = y[2]), 
+               alpha = 0.2) +
+  geom_segment(aes(x = x[6], 
+                   y = y[2], 
+                   xend = x[6], 
+                   yend = y[6]), 
+               alpha = 0.2) +
+  geom_segment(aes(x = x[3], 
+                   y = y[3], 
+                   xend = x[7], 
+                   yend = y[3]), 
+               alpha = 0.2) +
+  geom_segment(aes(x = x[7], 
+                   y = y[3], 
+                   xend = x[7], 
+                   yend = y[7]), 
+               alpha = 0.2) +
+  geom_segment(aes(x = x[4], 
+                   y = y[4], 
+                   xend = x[8], 
+                   yend = y[4]), 
+               alpha = 0.2) +
+  geom_segment(aes(x = x[8], 
+                   y = y[4], 
+                   xend = x[8], 
+                   yend = y[8]), 
+               alpha = 0.2) +
+  geom_point(aes(color = color)) + 
+  xlim(c(0,5)) + 
+  ylim(c(0,4.65)) + 
+  theme_minimal() + 
+  theme(axis.text.x=element_blank(), 
+        plot.background = element_rect(fill = color_even_rows, color = "#CCCCCC00"), 
+        panel.grid.major = element_line(color = "#AAAAAA70"), 
+        panel.grid.minor = element_line(color = "#AAAAAA00"), 
+        legend.position = "none") +
+  ylab(label = "") +
+  xlab(label = "continuous predictor")
+
+
+#### plots for the grid 
+
+## helper function for row name plots 
+helper_fun <- function(label, background_color){
+  ggplot() + 
+  ggplot2::xlim(0,7) + 
+  ggplot2::ylim(0,7) +
+  theme_void() +
+  annotate(
+    "text", label = label,
+    x = 3, y = 4, size = 4, color = "black"
+  ) +
+  theme(
+    plot.background = element_rect(fill = background_color, color = "#CCCCCC00")
+  )
+}
+
+## row names 
+plot_grid_name_row_1 <- helper_fun(
+  label = "1", 
+  background_color = color_uneven_rows)
+##
+plot_grid_name_row_2 <- helper_fun(
+  label = "2", 
+  background_color = color_even_rows)
+
+## create ID column name  
+plot_grid_name_col_0 <- ggplot() + 
+  ggplot2::xlim(0,7) + 
+  ggplot2::ylim(0,7) +
+  theme_void() +
+  annotate(
+    "text", label = "",
+    x = 3, y = 4, size = 4, color = "black"
+  ) +
+  theme(
+    plot.background = element_rect(fill = column_names_color, # "#CCCCCC90", 
+                                   color = "#CCCCCC00"
+    )
+  )
+
+## create helper for col A-D
+helper_fun <- function(label, background_color){
+  ggplot() + 
+  ggplot2::xlim(0,7) + 
+  ggplot2::ylim(0,7) +
+  theme_void() +
+  annotate(
+    "text", label = label,
+    x = 3, y = 4, size = 4, color = "black"
+  ) +
+  theme(
+    plot.background = element_rect(fill = background_color, # "#CCCCCC90", 
+                                   color = "#CCCCCC00"
+    )
+  )
+}
+
+##
+plot_grid_name_col_A <- helper_fun(
+  label = "A", 
+  background_color = column_names_color)
+##
+plot_grid_name_col_B <- helper_fun(
+  label = "B", 
+  background_color = column_names_color)
+##
+plot_grid_name_col_C <- helper_fun(
+  label = "C", 
+  background_color = column_names_color)
+##
+plot_grid_name_col_D <- helper_fun(
+  label = "D", 
+  background_color = column_names_color)
+
+
+## creating Fig. 06
+Fig_06 <- gridExtra::grid.arrange(
+  grobs = list(
+    plot_grid_name_col_0, plot_grid_name_col_A, plot_grid_name_col_B, plot_grid_name_col_C,plot_grid_name_col_D,
+    plot_grid_name_row_1, row_1__col_A, row_1__col_B, row_1__col_C, row_1__col_D,  
+    plot_grid_name_row_2, row_2__col_A, row_2__col_B, row_2__col_C, row_2__col_D), 
+  # ncol = 4, 
+  widths = c(0.2, 0.6, 1, 1.1, 1.2), 
+  heights = c(0.2, 1, 1),
+  layout_matrix = rbind(c(1:5),
+                        c(6:10), 
+                        c(11:15)))
+
+## save Fig. 06
+ggsave(file = "Output_Graphics/Fig_06.png", 
+       Fig_06, 
+       width = 16, 
+       height = 4 * 2.25, 
+       units = "cm", 
+       bg='#ffffff') 
 
 ```
 
 # Prepare Multi-Lab Data
+
+## Download Data
+
+```{r}
+
+## download data as rds object from DRIPHT Repository (https://osf.io/g2fzq) 
+rds_download <- osfr::osf_retrieve_file("2nw6v") %>% 
+  osfr::osf_download(., 
+                     path = file.path("Input_Data/rds"), 
+                     conflicts = "overwrite")
+
+## import the list 
+IPD_list <- readRDS(rds_download$local_path)
+
+## store IPD per data-set as csv files 
+invisible(
+ sapply(
+  names(IPD_list$IPD), 
+  function(name){
+    readr::write_csv(IPD_list$IPD[[name]], 
+                 file = paste(
+                   "Input_Data/", "csv/", # path 
+                   paste(name, ".csv", sep = ""), # file name
+                   sep = ""))
+  }) 
+)
+
+## download info on multi-lab data 
+rds_download <- osfr::osf_retrieve_file("cyx4v") %>% 
+  osfr::osf_download(., 
+                     path = file.path("Input_Data/"), 
+                     conflicts = "overwrite")
+
+## import the list 
+repository_info <- readr::read_csv2(rds_download$local_path)
+
+## keep the environment tidy 
+rm(
+  rds_download, 
+  IPD_list
+)
+
+```
 
 ## Import data
 
@@ -450,7 +1317,7 @@ Fig_5
 
 ## collect paths 
 paths <-  list.files(path = "Input_Data/csv", 
-                    pattern = "*.csv", 
+                    pattern = "\\.csv$",   
                     full.names = TRUE)
 
 ## apply read function to paths 
@@ -459,7 +1326,7 @@ data_file <- lapply(paths, readr::read_csv)
 ## rename list objects 
 names <- stringr::str_remove(
   string = list.files(path = "Input_Data/csv", 
-                      pattern = "*.csv",
+                      pattern = "\\.csv$",
                       full.names = FALSE), 
   pattern = ".csv")
 names(data_file) <- names
@@ -470,34 +1337,88 @@ rm(paths,
 
 ```
 
-## Change PSA06 & ML3 Ross
+## Edit Group Association
+
+All data sets are coded to produce a positive meta-analytical mean if that effect has the same sign as the original or if the dependent variable is affected in the hypothesized direction.
 
 ```{r}
 
-# 
-# data_file$PSA_006_Trolley_Problem$Group <- ifelse(data_file$PSA_006_Trolley_Problem$Group == 1,
-#                                                   0, 1)
-# 
-# data_file$ML3_Ross3$Group <- ifelse(data_file$ML3_Ross3$Group == 1,
-#                                                   0, 1)
+## change PSACR_002 (switch 0 and 1)
+data_file$Cognitive_Reappraisal$Group <- ifelse(data_file$Cognitive_Reappraisal$Group == 1, 0, 1) 
 
 ```
 
-## Identify Heterogeneous Efffects
+# Applying the Analyses to Multi-Lab Data
+
+## Calculate Means, ES & SE
 
 ```{r}
 
-## create site summaries
+
+## calculate control/reference & treatment group means, Effect Sizes (MD & d)
+## as well as the according standard errors 
 Site_Summaries <- MetaPipeX::summarize_sites(data = data_file)
 
-# ## run MetaPipeX function to merge site summaries
-# Merged_Site_Summaries <- MetaPipeX::merge_site_summaries(
-#   data = Site_Summaries$Site_Summaries
-#   )
+
+```
+
+## Excluding Homogeneous (Near) Null-Effects
+
+### Run Two-Stage Meta-Analyses
+
+```{r}
+### SMD 
 
 ## all MA except for Jacowitz_Population 
-two_stage_MA_MD <- lapply(names(Site_Summaries$Site_Summaries)[-9], 
-       function(MASC_name){
+two_stage_MA_SMD <- lapply(
+  names(Site_Summaries$Site_Summaries)[
+    -grep(pattern = "ML1_Jacowitz_Population", 
+          x = names(Site_Summaries$Site_Summaries))], 
+  function(MASC_name){
+         # select data set 
+         MASC_data <- Site_Summaries$Site_Summaries[[MASC_name]]
+         # run meta-analysis 
+         metafor::rma(
+           yi = SMD, 
+           sei = SE_SMD,
+           data = MASC_data, 
+           method = "REML")
+         })
+
+## rename list objects of two_stage_MA_SMD 
+names(two_stage_MA_SMD) <- names(Site_Summaries$Site_Summaries)[
+  -grep(pattern = "ML1_Jacowitz_Population", 
+        x = names(Site_Summaries$Site_Summaries))]
+
+##  MA  for Jacowitz_Population 
+ML1_Jacowitz_Population <- lapply(
+  names(Site_Summaries$Site_Summaries)[
+    grep(pattern = "ML1_Jacowitz_Population", 
+          x = names(Site_Summaries$Site_Summaries))],
+  function(MASC_name){
+         # select data set 
+         MASC_data <- Site_Summaries$Site_Summaries[[MASC_name]]
+         # run meta-analysis 
+         metafor::rma(
+           yi = SMD, 
+           sei = SE_SMD,
+           data = MASC_data, 
+           method = "REML"
+          # ,control=list(stepadj=0.3, verbose=TRUE)
+         )
+       })
+
+## add Jacowitz_Population to the list 
+two_stage_MA_SMD$ML1_Jacowitz_Population <- ML1_Jacowitz_Population[[1]]
+
+### MD 
+
+## all MA except for Jacowitz_Population 
+two_stage_MA_MD <- lapply(
+  names(Site_Summaries$Site_Summaries)[
+    -grep(pattern = "ML1_Jacowitz_Population", 
+          x = names(Site_Summaries$Site_Summaries))], 
+  function(MASC_name){
          # select data set 
          MASC_data <- Site_Summaries$Site_Summaries[[MASC_name]]
          # run meta-analysis 
@@ -509,11 +1430,16 @@ two_stage_MA_MD <- lapply(names(Site_Summaries$Site_Summaries)[-9],
          )
        })
 
-names(two_stage_MA_MD) <- names(data_file)[-9]
+names(two_stage_MA_MD) <- names(Site_Summaries$Site_Summaries)[
+  -grep(pattern = "ML1_Jacowitz_Population", 
+        x = names(Site_Summaries$Site_Summaries))]
 
 ##  MA  for Jacowitz_Population 
-ML1_Jacowitz_Population <- lapply(names(Site_Summaries$Site_Summaries)[9], 
-       function(MASC_name){
+ML1_Jacowitz_Population <- lapply(
+  names(Site_Summaries$Site_Summaries)[
+    grep(pattern = "ML1_Jacowitz_Population", 
+          x = names(Site_Summaries$Site_Summaries))],
+  function(MASC_name){
          # select data set 
          MASC_data <- Site_Summaries$Site_Summaries[[MASC_name]]
          # run meta-analysis 
@@ -528,494 +1454,1113 @@ ML1_Jacowitz_Population <- lapply(names(Site_Summaries$Site_Summaries)[9],
        })
 
 ## add Jacowitz_Population to the list 
-two_stage_MA_MD$ML1__Jacowitz_Population <- ML1_Jacowitz_Population[[1]]
+two_stage_MA_MD$ML1_Jacowitz_Population <- ML1_Jacowitz_Population[[1]]
 
-## reorder list according to initial input 
-two_stage_MA_MD <- two_stage_MA_MD[
-  base::order(
-    names(two_stage_MA_MD), 
-    names(Site_Summaries$Site_Summaries)
-    )]
+```
 
-## identify which data sets contain heterogeneous effects 
-inclusion_df <- data.frame(
+### Exclude Data
+
+```{r}
+
+## only run if names from data sets match 
+if (mean(names(two_stage_MA_MD) == names(two_stage_MA_SMD)) == 1) {
+  
+  ## identify which data sets contain homogeneous non-null effects 
+which_to_include <- data.frame(
   Data_Set = names(two_stage_MA_MD), 
-  Include = unlist(lapply(
-    names(two_stage_MA_MD), 
+  Null_Effect = unlist(lapply(
+    names(two_stage_MA_SMD), 
     function(name){
-      ifelse(test = two_stage_MA_MD[[name]]$QEp <= 0.05, 
+      ifelse(test = abs(two_stage_MA_SMD[[name]]$b) > 0.1,
+             yes = "no", 
+             no = "yes")
+      })), 
+  Effect_Homogeneity_MD = unlist(lapply(
+    names(two_stage_MA_MD),
+    function(name){
+      ifelse(test = two_stage_MA_MD[[name]]$QEp >= 0.05,
              yes = "yes", 
              no = "no")
       }))
   )
+  
+} else {
+  "there seems to be an error: the data sets do not match. check the previous chunk for errors"
+}
 
-## filter data frame to select data sets for the analyses 
-analysis_subset <- inclusion_df %>% dplyr::filter(Include == "yes")
+## names of excluded effects 
+excluded <- as.vector(unlist(
+  which_to_include %>% 
+    dplyr::filter(Null_Effect == "yes", 
+                  Effect_Homogeneity_MD == "yes") %>% 
+    dplyr::select(Data_Set)))
 
-## store as vector
-analysis_subset <- analysis_subset$Data_Set
+## names of included effects 
+included <- dplyr::setdiff(which_to_include$Data_Set, excluded)
 
-## print included effects 
-inclusion_df
 
-## keep environment tidy 
-rm(Site_Summaries,
-   ML1_Jacowitz_Population, 
-   two_stage_MA_MD, 
-   inclusion_df)
+## n included 
+length(included)
+
+## n excluded: homogeneous (near) null-effects 
+length(excluded)
+
+```
+
+## Excluding Qualitative Independent variables 
+
+```{r}
+
+##
+
+quantitative <- c(
+  ## control group designs 
+  "ML1_Oppenheimer_Meyvis", 
+  "ML2_Risen_CR", 
+  "ML2_Risen", 
+  "ML2_Gray",
+  "RRR_04_Sripada",
+  ## reference group designs 
+  "ML3_Monin", ## differing opinions on the quantitativeness
+  "ML3_Ross3", ## differing opinions on the quantitativeness
+  "ML2_Critcher", 
+  "ML2_Hsee", 
+  "ML1_Jacowitz_Population",
+  "ML1_Jacowitz_Distance", 
+  "ML1_Jacowitz_Births", 
+  "ML1_Oppenheimer_Monin", 
+  "ML1_Jacowitz_Height", 
+  "ML1_Lorge",
+  "ML2_Huang_CR", 
+  "ML2_Huang"
+)
+
+qualitative <- dplyr::setdiff(included, quantitative)
+
+## n included (quantitative)
+length(quantitative)
 
 
 ```
 
-# Analyze Multi-Lab Data
+## Create Primary and Secondary Subset
 
-#### brms
+### Primary Subset
+
+```{r}
+
+## create vector with designs with control groups 
+primary_subset <- c(
+    "ML1_Oppenheimer_Meyvis", 
+    "ML2_Risen_CR", 
+    "ML2_Risen", 
+    "ML2_Gray",
+    "RRR_04_Sripada"
+)
+
+## n primary_subset
+length(primary_subset)
+
+
+```
+
+### Secondary Subset
+
+```{r}
+
+## create vector with reference group designs 
+secondary_subset <- dplyr::setdiff(quantitative, primary_subset)
+
+## exclude reference group designs without baselines 
+no_baselines <- c("ML2_Hsee", "ML1_Oppenheimer_Monin", "ML2_Huang_CR", "ML2_Huang")
+secondary_subset <- secondary_subset[!secondary_subset %in% no_baselines]
+
+## n primary_subset
+length(secondary_subset)
+
+```
+
+### Table 1
+
+```{r}
+
+## change the underscores to match the table 
+all_subsets_ID <- c(
+  sub("_", replacement = "__", primary_subset)[1:4], 
+  "RRR_04__Sripada", 
+  sub("_", replacement = "__", secondary_subset)[1:length(secondary_subset)]
+)
+
+## table with repository info: https://osf.io/cyx4v 
+all_subsets <- lapply(
+  all_subsets_ID, 
+  function(ID){
+    repository_info %>% 
+      dplyr::filter(Repository_ID == ID)}
+  )
+## create df 
+all_subsets <- do.call(rbind, all_subsets)
+
+## create Table 1
+Table_1 <- data.frame(
+  ID = c(1:nrow(all_subsets)),
+  Subset = c(rep("primary", times = length(primary_subset)),
+             rep("secondary", times = length(secondary_subset))),
+  Project = all_subsets$Project,
+  Origina_Authors = all_subsets$Orig_Authors,
+  Items_n = all_subsets$Items_n,
+  Scale_Min = all_subsets$Scale_Min,
+  Scale_Max = all_subsets$Scale_Max
+)
+
+## export table as csv
+readr::write_csv(Table_1, file = "Output_Tables/table_1.csv")
+
+## export table as .docx
+officer::read_docx() %>%
+  flextable::body_add_flextable(
+    value = flextable::flextable(data = Table_1)) %>%
+  print(target = "Output_Tables/table_1.docx")
+
+
+
+
+```
+
+## Describing and Visualizing Heterogeneity
+
+### Run One-Stage Meta-Analysis
+
+#### Primary Subset
 
 ```{r}
 
 ### by default, this chunk only imports the files  
 ### if you wish to re-run the brms models, remove the # in the following chunks
-### it took about 40 minutes on a Macbook Air M2 to run the models
 
-# ## run the model
-# IPD_MA_brms <- lapply(analysis_subset,
-#                            function(name){
-#                               # random intercepts & random slopes
-#                               brms::brm(
-#                                 brms::bf(
-#                                   formula = DV ~ Group + (Group | Data_Collection_Site), 
-#                                   decomp = "QR"),
-#                                 data = data_file[[name]],
-#                                 cores = 4, 
-#                                 backend = "cmdstanr"
-#                                 )
-#                              })
-# 
-# ## rename list objects
-# names(IPD_MA_brms) <- analysis_subset
-# 
-# ## export results 
-# readr::write_rds(IPD_MA_brms, "IPD_MA_brms.rds")
+## remove multi-lab ID for further use 
+primary_subset_short <- stringr::str_remove(primary_subset,  "ML1_")
+primary_subset_short <- stringr::str_remove(primary_subset_short,  "ML2_")
+primary_subset_short <- stringr::str_remove(primary_subset_short,  "RRR_04_")
 
-## import results: if the data exist, this saves a lot of time
-IPD_MA_brms <- readr::read_rds("Output_Data/IPD_MA_brms.rds")
-
-```
-
-# Table 1
-
-```{r}
-
-## treatment group mean: 
-
-## tau_TM = tau_CM + tau_MD + 2 * COV(CM, MD) 
-
-## ISC tau_CM * tau_MD = COV(CM, MD)  
-
-
-## create list with table data 
-Table_1_data <- lapply(
-  seq(from = 1, to = length(analysis_subset), by = 1),
-  function(ID){
-    ## get name of the data set 
-    name <- analysis_subset[ID]
-    ## grab the summary file for the data set 
-    data <- summary(IPD_MA_brms[[name]])
-    ## calculate ratio (tau_TM/tau_CM)
-    ## tau_TM = sqrt( tau_CM^2 + tau_MD^2 + 2 * ISC * tau_CM * tau_MD )
-    ratio <- sqrt(data$random$Data_Collection_Site$Estimate[1]^2 + 
-      data$random$Data_Collection_Site$Estimate[2]^2 + 
-      2 * data$random$Data_Collection_Site$Estimate[3] * 
-      data$random$Data_Collection_Site$Estimate[1] * 
-      data$random$Data_Collection_Site$Estimate[2]) / 
-      data$random$Data_Collection_Site$Estimate[1]
-    ## craete data table 
-    tibble::tibble(
-      "ID" = paste(ID, ")", sep = ""),
-      "Data Set" = name, 
-      "CM Het." = ifelse(test = data$random$Data_Collection_Site$`l-95% CI`[1] > 0, 
-                         yes = "yes", 
-                         no = "yes"),
-      "Ratio" = round(ratio, digits = 3),
-      "ISC" = round(data$random$Data_Collection_Site$Estimate[3], digits = 3),
-      "ISC LL" = round(data$random$Data_Collection_Site$`l-95% CI`[3], digits = 3),
-      "ISC UL" = round(data$random$Data_Collection_Site$`u-95% CI`[3], digits = 3)
-      )
-    
-  }
-)
-
-## create data table with all data sets 
-Table_1_data <- do.call(rbind, Table_1_data)
-
-## export table as csv
-readr::write_csv(Table_1_data, file = "Output_Tables/Manuscript/table_1.csv")
-
-## export table as .docx
-officer::read_docx() %>% 
-  flextable::body_add_flextable(value = flextable::flextable(data = Table_1_data)) %>% 
-  print(target = "Output_Tables/Manuscript/table_1.docx")
-
-```
-
-# Fig. 6 - 8
-
-## Fig. 6
-
-Intercept & Slope Scatter Plots
-
-```{r}
-
-## create list with model results for intercept and slope 
-Fig_6_data_list <- lapply(
-  analysis_subset, 
-  function(name){
-    data <- as.data.frame(brms::ranef(IPD_MA_brms[[name]]))
-    ranef_intercepts <- data$Data_Collection_Site.Estimate.Intercept
-    ranef_slopes <- data$Data_Collection_Site.Estimate.Group
-    fixef_intercept <- summary(IPD_MA_brms[[name]])
-    fixef_intercept <- fixef_intercept$fixed["Intercept","Estimate"]
-    fixef_slope <- summary(IPD_MA_brms[[name]])
-    fixef_slope <- fixef_slope$fixed["Group","Estimate"]
-    
-    data.frame(
-      MASC = rep(name, times = length(ranef_slopes)),
-      intercepts = fixef_intercept + ranef_intercepts, 
-      slopes = fixef_slope + ranef_slopes
-      )
-  }
-)
-
-## create df with model results for intercept and slope 
-Fig_6_data <- do.call(rbind, Fig_6_data_list)
-
-## create Fig. 6
-Fig_6_list <- lapply(
-  seq(from = 1, to = length(analysis_subset), by = 1),
-  function(ID){
-    ## get name of the data set 
-    name <- analysis_subset[ID]
-    
-    ## select data set 
-    data <- Fig_6_data %>% dplyr::filter(MASC == name)
-    
-    ## create plot 
-    ggplot(aes(x = intercepts, 
-               y = slopes), 
-           data = data) + 
-      geom_point() + 
-      ggtitle(label = paste(ID, ")", sep = "")) + 
-      theme_light() +
-      theme(
-        axis.title.x = element_blank(), 
-        axis.title.y = element_blank(), 
-        axis.text.x = element_blank(), 
-        axis.text.y = element_blank()
-      ) # + plot_coding_colors
-    }
-)
-
-## create Fig. 6 
-Fig_6 <- gridExtra::arrangeGrob(
-  grobs = Fig_6_list, 
-  nrow = 4, 
-  ncol = 5, 
-  bottom = "intercept", 
-  left = "slope")
-
-## save Fig. 6
-ggsave(file = "Output_Graphics/Fig_6.png", 
-       Fig_6, 
-       width = 16, 
-       height = 15, 
-       units = "cm") 
-
-## plot Fig. 6
-gridExtra::grid.arrange(grobs = Fig_6_list, 
-                        nrow = 4, 
-                        ncol = 5, 
-                        bottom = "intercept", 
-                        left = "slope")
-
-## keep environment tidy 
-rm(Fig_6_data_list, 
-   Fig_6_list)
-
-```
-
-## Fig. 7 a) & b) 
-
-Data-Sets:
-
--   ML2\_\_Risen
-
--   ML2\_\_Hsee
-
-```{r}
-
-## create the individual plots
-Fig_7_a_b <- MD_heterogeneity_plots(brms_object = IPD_MA_brms$ML2__Risen, 
-                            return_plot_list = TRUE)
-Fig_7_c_d <- MD_heterogeneity_plots(brms_object = IPD_MA_brms$ML2__Hsee, 
-                            return_plot_list = TRUE, 
-                            plot_1_title = "c)", 
-                            plot_2_title = "d)")
-
-## create Fig. 7
-Fig_7 <- gridExtra::arrangeGrob(
-  grobs = c(Fig_7_a_b, 
-            Fig_7_c_d), 
-  nrow = 2, 
-  ncol = 2)
-
-## save Fig. 7
-ggsave(file = "Output_Graphics/Fig_7.png", 
-       Fig_7, 
-       width = 16, 
-       height = 16, 
-       units = "cm") 
-
-## plot Fig. 7
-gridExtra::grid.arrange(
-  grobs = c(Fig_7_a_b, 
-            Fig_7_c_d), 
-  nrow = 2, 
-  ncol = 2)
-
-## keep environment tidy 
-rm(Fig_7_a_b, 
-   Fig_7_c_d)
-
-```
-
-## Fig. 8 a) & b) 
-
-Data-Sets:
-
--   ML1\_\_Jacowitz_Births
-
--   ML1\_\_Jacowitz_Height
-
-```{r}
-
-## create the individual plots
-Fig_8_a_b <- MD_heterogeneity_plots(brms_object = IPD_MA_brms$ML1__Jacowitz_Births, 
-                            return_plot_list = TRUE)
-Fig_8_c_d <- MD_heterogeneity_plots(brms_object = IPD_MA_brms$ML1__Jacowitz_Height, 
-                            return_plot_list = TRUE, 
-                            plot_1_title = "c)", 
-                            plot_2_title = "d)")
-
-## create Fig. 8
-Fig_8 <- gridExtra::arrangeGrob(
-  grobs = c(Fig_8_a_b, 
-            Fig_8_c_d), 
-  nrow = 2, 
-  ncol = 2)
-
-## save Fig. 8
-ggsave(file = "Output_Graphics/Fig_8.png", 
-       Fig_8, 
-       width = 16, 
-       height = 16, 
-       units = "cm") 
-
-## plot Fig. 8
-gridExtra::grid.arrange(
-  grobs = c(Fig_8_a_b, 
-            Fig_8_c_d), 
-  nrow = 2, 
-  ncol = 2)
-
-## keep environment tidy 
-rm(Fig_8_a_b, 
-   Fig_8_c_d)
-
-```
-
-# Discussion 
-
-Relative Ratio for ML1\_\_Jacowitz_Births
-
-```{r}
-
-## create summary object 
-summary_Jacowitz_Births <- summary(IPD_MA_brms$ML1__Jacowitz_Births)
-
-## store information from the VCOV matrix 
-tau_CM <- summary_Jacowitz_Births$random$Data_Collection_Site$Estimate[1]
-tau_MD <- summary_Jacowitz_Births$random$Data_Collection_Site$Estimate[2]
-ISC <- summary_Jacowitz_Births$random$Data_Collection_Site$Estimate[3]
-mu_CM <- summary_Jacowitz_Births$fixed$Estimate[1]
-mu_MD <- summary_Jacowitz_Births$fixed$Estimate[2]
-mu_TM <- mu_CM + mu_MD
-
-## tau_TM = sqrt( tau_CM^2 + tau_MD^2 + 2 * ISC * tau_CM * tau_MD )
-tau_TM <- sqrt( tau_CM^2 + tau_MD^2 + 2 * ISC * tau_CM * tau_MD )
-
-## calculate relative ratio
-(tau_TM/mu_TM)/(tau_CM/mu_CM)
-
-## keep environment tidy 
-rm(ISC, 
-   mu_CM,  
-   mu_MD, 
-   mu_TM,
-   summary_Jacowitz_Births,
-   tau_CM, 
-   tau_MD, 
-   tau_TM)
-
-```
-
-# Appendix 
-
-```{r}
 
 ## run the model
-IPD_MA_lme4 <- lapply(analysis_subset,
-                      function(name){
-                        # random intercepts & random slopes
-                        lme4::lmer(DV ~ Group + (Group | Data_Collection_Site),
-                                   data = data_file[[name]], 
-                                   REML = TRUE, 
-                                   control = lme4::lmerControl(optimizer = "bobyqa"))
-                        })
+primary_subset_brms <- lapply(primary_subset_short,
+                           function(name){
+                              # random intercepts & random slopes
+                              brms::brm(
+                                brms::bf(
+                                  formula = DV ~ Group + (Group | Data_Collection_Site),
+                                  decomp = "QR"),
+                                data = data_file[[name]],
+                                cores = 4,
+                                backend = "cmdstanr"
+                                )
+                             })
 
 ## rename list objects
-names(IPD_MA_lme4) <- analysis_subset
+names(primary_subset_brms) <- primary_subset
 
-## export results 
-readr::write_rds(IPD_MA_lme4, "Output_Data/IPD_MA_lme4.rds")
+## export results
+readr::write_rds(primary_subset_brms, "primary_subset_brms.rds")
 
-## create list with ISC and slope (MD) heterogeneity
-lme4_comparison <- lapply(
-  analysis_subset, 
-  function(name){
-    summary_object <- summary(IPD_MA_lme4[[name]])
-    ## create list with attributes from the summary object 
-    varcor_info <- attributes(summary_object$varcor$Data_Collection_Site)
-    ## create output df 
-    data.frame(
-      data_set = name, 
-      slope_heterogeneity = as.numeric(varcor_info$stddev["Group"]), 
-      ISC = varcor_info$correlation[1,2]
-    )
-  }
-)
+# ## import results: if the data exist, this saves a lot of time
+# primary_subset_brms <- readr::read_rds("Output_Data/primary_subset_brms.rds")
 
-## store as df
-lme4_comparison <- do.call(rbind, lme4_comparison)
-
-### brms
-## create list with ISC and slope (MD) heterogeneity
-brms_comparison <- lapply(
-  analysis_subset, 
-  function(name){
-    summary_object <- summary(IPD_MA_brms[[name]])
-    ## create df with sd & cor for intercept and slope
-    sdcor_info <- summary_object$random$Data_Collection_Site
-    ## create output df 
-    data.frame(
-      data_set = name, 
-      slope_heterogeneity = sdcor_info[2,"Estimate"], 
-      ISC = sdcor_info[3,"Estimate"]
-    )
-  }
-)
-
-## store as df
-brms_comparison <- do.call(rbind, brms_comparison)
-
-comparison_df <- data.frame(
-  data_set = brms_comparison$data_set, 
-  brms_slope_heterogeneity = brms_comparison$slope_heterogeneity, 
-  lme4_slope_heterogeneity = lme4_comparison$slope_heterogeneity, 
-  brms_ISC = brms_comparison$ISC, 
-  lme4_ISC = lme4_comparison$ISC
-)
-
-
-## plot results for the ratio of slope heterogeneities to compare the model results
-## create A 1.1
-A_1.1 <- ggplot(aes(x = brms_slope_heterogeneity/lme4_slope_heterogeneity), 
-                data = comparison_df)  + 
-  geom_histogram() + 
-  theme_minimal() + 
-  scale_y_continuous(breaks = seq(from = 0, to = 9, by = 1))
-
-
-## save A 1.1
-ggsave(file = "A_1.1.png", 
-       A_1.1, 
-       width = 16, 
-       height = 9, 
-       units = "cm") 
-
-## plot A 1.1
-A_1.1
-
-
-## plot results for the ISC to compare the model results
-## create A 1.2
-A_1.2 <- ggplot(aes(x = brms_ISC, 
-                    y = lme4_ISC), 
-                data = comparison_df) + 
-  geom_point() + 
-  theme_minimal() + 
-  scale_x_continuous(breaks = seq(from = -1, to = 0.25, by = 0.25)) +
-  scale_y_continuous(breaks = seq(from = -1, to = 0.25, by = 0.25))
-
-## save A 1.2
-ggsave(file = "A_1.2.png", 
-       A_1.2, 
-       width = 16, 
-       height = 9, 
-       units = "cm") 
-
-## plot A 1.2
-A_1.2
-
-### results:
-## one data-set, ML1_Jacowitz_Births, produces NA for ISC in lme4 (not enough intercept heterogeneity to estimate covariance)
-## one data-set, ML2_Critcher, produces ISC = -1 in lme4 (not enough slope heterogeneity to estimate covariance)
-## the rest is consistent 
-
-## keep environment tidy 
-rm(lme4_comparison, 
-   brms_comparison)
 
 ```
 
-# Digital Appendix 
+#### Secondary Subset
 
 ```{r}
 
-## download table from DRIPHT Repository (https://osf.io/g2fzq) 
-table_download <- osfr::osf_retrieve_file("cyx4v") %>% 
-  osfr::osf_download(., 
-                     path = file.path("Output_Tables/Digital_Appendix/"))
+## remove multi-lab ID for further use 
+secondary_subset_short <- stringr::str_remove(secondary_subset,  "ML1_")
+secondary_subset_short <- stringr::str_remove(secondary_subset_short,  "ML2_")
+secondary_subset_short <- stringr::str_remove(secondary_subset_short,  "ML3_")
 
-## rename table 
-file.rename(from = "Output_Tables/Digital_Appendix/metadata_sheet.csv", 
-            to = "Output_Tables/Digital_Appendix/digital_appendix_1.csv")
+## run the model
+secondary_subset_brms <- lapply(secondary_subset_short,
+                           function(name){
+                              # random intercepts & random slopes
+                              brms::brm(
+                                brms::bf(
+                                  formula = DV ~ Group + (Group | Data_Collection_Site),
+                                  decomp = "QR"),
+                                data = data_file[[name]],
+                                cores = 4,
+                                backend = "cmdstanr"
+                                )
+                             })
 
-## import table 
-digital_appendix_1 <- readr::read_csv2("Output_Tables/Digital_Appendix/digital_appendix_1.csv")
+## rename list objects
+names(secondary_subset_brms) <- secondary_subset
 
-## reduce the table to the "analysis_subset"
-digital_appendix_2 <- digital_appendix_1 %>% 
-  dplyr::filter(Repository_ID %in% analysis_subset)
+## export results
+readr::write_rds(secondary_subset_brms, "secondary_subset_brms.rds")
 
-## export csv 
-readr::write_csv(digital_appendix_2, 
-                 file = "Output_Tables/Digital_Appendix/digital_appendix_2.csv")
+# ## import results: if the data exist, this saves a lot of time
+# secondary_subset_brms <- readr::read_rds("Output_Data/secondary_subset_brms.rds")
 
-## keep environment tidy 
-rm(table_download, 
-   digital_appendix_1, 
-   digital_appendix_2)
 
 ```
 
+### Run Two-Stage Meta-Analysis
+
+#### Primary Subset
+
+```{r}
+
+
+### CM 
+
+## all MA except for Jacowitz_Population 
+primary_two_stage_MA_CM <- lapply(
+  primary_subset, 
+  function(MASC_name){
+         # select data set 
+         MASC_data <- Site_Summaries$Site_Summaries[[MASC_name]]
+         # run meta-analysis 
+         metafor::rma(
+           yi = C_M, 
+           sei = SE_C_M,
+           data = MASC_data, 
+           method = "REML"
+         )
+       })
+
+names(primary_two_stage_MA_CM) <- primary_subset
+
+
+```
+
+#### Secondary Subset
+
+```{r}
+
+
+### reference group  
+
+## all MA except for Jacowitz_Population 
+secondary_two_stage_MA_CM <- lapply(
+  secondary_subset[-which(secondary_subset == "ML1_Jacowitz_Population")], 
+  function(MASC_name){
+         # select data set 
+         MASC_data <- Site_Summaries$Site_Summaries[[MASC_name]]
+         # run meta-analysis 
+         metafor::rma(
+           yi = C_M, 
+           sei = SE_C_M,
+           data = MASC_data, 
+           method = "REML"
+         )
+       })
+
+names(secondary_two_stage_MA_CM) <- secondary_subset[-which(secondary_subset == "ML1_Jacowitz_Population")]
+
+##  MA  for Jacowitz_Population
+ML1_Jacowitz_Population <- lapply(
+  "ML1_Jacowitz_Population",
+  function(MASC_name){
+         # select data set
+         MASC_data <- Site_Summaries$Site_Summaries[[MASC_name]]
+         # run meta-analysis
+         metafor::rma(
+           yi = C_M,
+           sei = SE_C_M,
+           data = MASC_data,
+           method = "REML",
+           control=list(stepadj=0.3,
+                        verbose=TRUE)
+         )
+       })
+
+## add Jacowitz_Population to the list
+secondary_two_stage_MA_CM$ML1_Jacowitz_Population <- ML1_Jacowitz_Population[[1]]
+
+### treatment group  
+
+## all MA except for Jacowitz_Population 
+secondary_two_stage_MA_TM <- lapply(
+  secondary_subset[-which(secondary_subset == "ML1_Jacowitz_Population")], 
+  function(MASC_name){
+         # select data set 
+         MASC_data <- Site_Summaries$Site_Summaries[[MASC_name]]
+         # run meta-analysis 
+         metafor::rma(
+           yi = T_M, 
+           sei = SE_T_M,
+           data = MASC_data, 
+           method = "REML"
+         )
+       })
+
+names(secondary_two_stage_MA_TM) <- secondary_subset[-which(secondary_subset == "ML1_Jacowitz_Population")]
+
+##  MA  for Jacowitz_Population
+ML1_Jacowitz_Population <- lapply(
+  "ML1_Jacowitz_Population",
+  function(MASC_name){
+         # select data set
+         MASC_data <- Site_Summaries$Site_Summaries[[MASC_name]]
+         # run meta-analysis
+         metafor::rma(
+           yi = T_M,
+           sei = SE_T_M,
+           data = MASC_data,
+           method = "REML",
+           control=list(stepadj=0.3,
+                        verbose=TRUE)
+         )
+       })
+
+## add Jacowitz_Population to the list
+secondary_two_stage_MA_TM$ML1_Jacowitz_Population <- ML1_Jacowitz_Population[[1]]
+
+
+```
+
+### Primary Subset
+
+### Fig. 7
+
+```{r}
+
+## set background colors 
+color_uneven_rows <- "#56B4E910"
+color_even_rows <- "#56B4E919"
+column_names_color <- "#56B4E930"
+
+
+## create plots for column A
+row_1__col_A <- descriptors_control_group_design(
+  name = primary_subset[1], 
+  brms_data = primary_subset_brms, 
+  two_stage_MA_CM = primary_two_stage_MA_CM, 
+  two_stage_MA_MD = two_stage_MA_MD,
+  background_color = color_uneven_rows)
+row_2__col_A <- descriptors_control_group_design(
+  name = primary_subset[2], 
+  brms_data = primary_subset_brms, 
+  two_stage_MA_CM = primary_two_stage_MA_CM, 
+  two_stage_MA_MD = two_stage_MA_MD,
+  background_color = color_even_rows)
+row_3__col_A <- descriptors_control_group_design(
+  name = primary_subset[3], 
+  brms_data = primary_subset_brms, 
+  two_stage_MA_CM = primary_two_stage_MA_CM, 
+  two_stage_MA_MD = two_stage_MA_MD,
+  background_color = color_uneven_rows)
+row_4__col_A <- descriptors_control_group_design(
+  name = primary_subset[4], 
+  brms_data = primary_subset_brms, 
+  two_stage_MA_CM = primary_two_stage_MA_CM, 
+  two_stage_MA_MD = two_stage_MA_MD,
+  background_color = color_even_rows)
+row_5__col_A <- descriptors_control_group_design(
+  name = primary_subset[5], 
+  brms_data = primary_subset_brms, 
+  two_stage_MA_CM = primary_two_stage_MA_CM, 
+  two_stage_MA_MD = two_stage_MA_MD,
+  background_color = color_uneven_rows)
+
+## create plots for column B
+helper_fun <- function(brms_object_name, background_color){
+  MD_heterogeneity_plot_2(
+  brms_object = primary_subset_brms[[brms_object_name]],
+  return_plot_list = FALSE, 
+  DV_lim_lower = NULL, 
+  DV_lim_upper = NULL, 
+  label_short = TRUE, 
+  background_color = background_color, 
+  y_lab_text_short = "DV")
+}
+
+row_1__col_B <- helper_fun(primary_subset[1], 
+                           background_color = color_uneven_rows)
+row_2__col_B <- helper_fun(primary_subset[2], 
+                           background_color = color_even_rows)
+row_3__col_B <- helper_fun(primary_subset[3], 
+                           background_color = color_uneven_rows)
+row_4__col_B <- helper_fun(primary_subset[4], 
+                           background_color = color_even_rows)
+row_5__col_B <- helper_fun(primary_subset[5], 
+                           background_color = color_uneven_rows)
+
+## create plots for column C
+helper_fun <- function(brms_object_name, background_color){
+  MD_heterogeneity_plot_1(
+  brms_object = primary_subset_brms[[brms_object_name]],
+  return_plot_list = FALSE, 
+  DV_lim_lower = NULL, 
+  DV_lim_upper = NULL, 
+  label_short = TRUE, 
+  background_color = background_color, 
+  x_lab_text_short = "group", 
+  y_lab_text_short = "DV")
+}
+
+row_1__col_C <- helper_fun(primary_subset[1], 
+                           background_color = color_uneven_rows)
+row_2__col_C <- helper_fun(primary_subset[2], 
+                           background_color = color_even_rows)
+row_3__col_C <- helper_fun(primary_subset[3], 
+                           background_color = color_uneven_rows)
+row_4__col_C <- helper_fun(primary_subset[4], 
+                           background_color = color_even_rows)
+row_5__col_C <- helper_fun(primary_subset[5], 
+                           background_color = color_uneven_rows)
+
+
+### plots for the grid 
+
+helper_fun <- function(label, background_color){
+  ggplot() + 
+  ggplot2::xlim(0,7) + 
+  ggplot2::ylim(0,7) +
+  theme_void() +
+  annotate(
+    "text", label = label,
+    x = 3, y = 4, size = 4, color = "black"
+  ) +
+  theme(
+    plot.background = element_rect(fill = background_color, color = "#CCCCCC00")
+  )
+}
+
+plot_grid_name_row_1 <- helper_fun(label = "1", 
+                                   background_color = color_uneven_rows)
+plot_grid_name_row_2 <- helper_fun(label = "2", 
+                                   background_color = color_even_rows)
+plot_grid_name_row_3 <- helper_fun(label = "3", 
+                                   background_color = color_uneven_rows)
+plot_grid_name_row_4 <- helper_fun(label = "4", 
+                                   background_color = color_even_rows)
+plot_grid_name_row_5 <- helper_fun(label = "5", 
+                                   background_color = color_uneven_rows)
+
+## create ID column name  
+plot_grid_name_col_0 <- ggplot() + 
+  ggplot2::xlim(0,7) + 
+  ggplot2::ylim(0,7) +
+  theme_void() +
+  annotate(
+    "text", label = "ID",
+    x = 3, y = 4, size = 4, color = "black"
+  ) +
+  theme(
+    plot.background = element_rect(fill = column_names_color, # "#CCCCCC90", 
+                                   color = "#CCCCCC00"
+    )
+  )
+
+## create helper for col A-D
+helper_fun <- function(label, background_color){
+  ggplot() + 
+  ggplot2::xlim(0,7) + 
+  ggplot2::ylim(0,7) +
+  theme_void() +
+  annotate(
+    "text", label = label,
+    x = 3, y = 4, size = 4, color = "black"
+  ) +
+  theme(
+    plot.background = element_rect(fill = background_color, # "#CCCCCC90", 
+                                   color = "#CCCCCC00"
+    )
+  )
+}
+
+##
+plot_grid_name_col_A <- helper_fun(
+  label = "A", 
+  background_color = column_names_color)
+##
+plot_grid_name_col_B <- helper_fun(
+  label = "B", 
+  background_color = column_names_color)
+##
+plot_grid_name_col_C <- helper_fun(
+  label = "C", 
+  background_color = column_names_color)
+##
+plot_grid_name_col_D <- helper_fun(
+  label = "D", 
+  background_color = column_names_color)
+
+
+## create Fig. 07
+Fig_07 <- gridExtra::grid.arrange(
+  grobs = list(
+    plot_grid_name_col_0, 
+    plot_grid_name_col_A, 
+    plot_grid_name_col_B, 
+    plot_grid_name_col_C, 
+    plot_grid_name_row_1, row_1__col_A, row_1__col_B, row_1__col_C,  
+    plot_grid_name_row_2, row_2__col_A, row_2__col_B, row_2__col_C, 
+    plot_grid_name_row_3, row_3__col_A, row_3__col_B, row_3__col_C, 
+    plot_grid_name_row_4, row_4__col_A, row_4__col_B, row_4__col_C, 
+    plot_grid_name_row_5, row_5__col_A, row_5__col_B, row_5__col_C), 
+  # ncol = 5, 
+  widths = c(0.2, 0.8, 1,  1.1), 
+  heights = c(0.2, 1, 1, 1, 1, 1),
+  layout_matrix = rbind(c(1:4),
+                        c(5:8), 
+                        c(9:12), 
+                        c(13:16), 
+                        c(17:20), 
+                        c(21:24)))
+
+## save Fig. 07
+ggsave(file = "Output_Graphics/Fig_07.png", 
+       Fig_07, 
+       width = 16, 
+       height = 4 * 5.25, 
+       units = "cm", 
+       bg='#ffffff') 
+
+
+```
+
+### Secondary Subset
+
+### Fig. 8.1
+
+```{r}
+
+## set background colors 
+color_uneven_rows <- "#56B4E910"
+color_even_rows <- "#56B4E919"
+column_names_color <- "#56B4E930"
+
+
+## create plots for column A
+row_1__col_A <- descriptors_reference_group_design(
+  name = secondary_subset[1], 
+  brms_data = secondary_subset_brms, 
+  two_stage_MA_CM = secondary_two_stage_MA_CM, 
+  two_stage_MA_TM = secondary_two_stage_MA_TM, 
+  two_stage_MA_MD = two_stage_MA_MD,
+  background_color = color_uneven_rows)
+##
+row_2__col_A <- descriptors_reference_group_design(
+  name = secondary_subset[2], 
+  brms_data = secondary_subset_brms, 
+  two_stage_MA_CM = secondary_two_stage_MA_CM, 
+  two_stage_MA_TM = secondary_two_stage_MA_TM, 
+  two_stage_MA_MD = two_stage_MA_MD,
+  background_color = color_even_rows)
+##
+row_3__col_A <- descriptors_reference_group_design(
+  name = secondary_subset[3], 
+  brms_data = secondary_subset_brms, 
+  two_stage_MA_CM = secondary_two_stage_MA_CM, 
+  two_stage_MA_TM = secondary_two_stage_MA_TM, 
+  two_stage_MA_MD = two_stage_MA_MD,
+  background_color = color_uneven_rows)
+##
+row_4__col_A <- descriptors_reference_group_design(
+  name = secondary_subset[4], 
+  brms_data = secondary_subset_brms, 
+  two_stage_MA_CM = secondary_two_stage_MA_CM, 
+  two_stage_MA_TM = secondary_two_stage_MA_TM, 
+  two_stage_MA_MD = two_stage_MA_MD,
+  background_color = color_even_rows)
+##
+row_5__col_A <- descriptors_reference_group_design(
+  name = secondary_subset[5], 
+  brms_data = secondary_subset_brms, 
+  two_stage_MA_CM = secondary_two_stage_MA_CM, 
+  two_stage_MA_TM = secondary_two_stage_MA_TM, 
+  two_stage_MA_MD = two_stage_MA_MD,
+  background_color = color_uneven_rows)
+##
+row_6__col_A <- descriptors_reference_group_design(
+  name = secondary_subset[6], 
+  brms_data = secondary_subset_brms, 
+  two_stage_MA_CM = secondary_two_stage_MA_CM, 
+  two_stage_MA_TM = secondary_two_stage_MA_TM, 
+  two_stage_MA_MD = two_stage_MA_MD,
+  background_color = color_even_rows)
+
+
+## create plots for column B
+helper_fun <- function(brms_object_name, background_color){
+  MD_heterogeneity_plot_2(
+  brms_object = secondary_subset_brms[[brms_object_name]],
+  return_plot_list = FALSE, 
+  DV_lim_lower = NULL, 
+  DV_lim_upper = NULL, 
+  label_short = TRUE, 
+  background_color = background_color, 
+  y_lab_text_short = "DV")
+}
+
+##
+row_1__col_B <- helper_fun(
+  secondary_subset[1], 
+  background_color = color_uneven_rows)
+##
+row_2__col_B <- helper_fun(
+  secondary_subset[2], 
+  background_color = color_even_rows)
+##
+row_3__col_B <- helper_fun(
+  secondary_subset[3], 
+  background_color = color_uneven_rows)
+##
+row_4__col_B <- helper_fun(
+  secondary_subset[4], 
+  background_color = color_even_rows)
+##
+row_5__col_B <- helper_fun(
+  secondary_subset[5], 
+  background_color = color_uneven_rows)
+##
+row_6__col_B <- helper_fun(
+  secondary_subset[6], 
+  background_color = color_even_rows)
+
+## create plots for column C
+helper_fun <- function(brms_object_name, background_color){
+  MD_heterogeneity_plot_1(
+  brms_object = secondary_subset_brms[[brms_object_name]],
+  return_plot_list = FALSE, 
+  DV_lim_lower = NULL, 
+  DV_lim_upper = NULL, 
+  label_short = TRUE, 
+  background_color = background_color, 
+  x_lab_text_short = "group", 
+  y_lab_text_short = "DV")
+}
+
 ## 
+row_1__col_C <- helper_fun(
+  secondary_subset[1], 
+  background_color = color_uneven_rows)
+##
+row_2__col_C <- helper_fun(
+  secondary_subset[2], 
+  background_color = color_even_rows)
+##
+row_3__col_C <- helper_fun(
+  secondary_subset[3], 
+  background_color = color_uneven_rows)
+##
+row_4__col_C <- helper_fun(
+  secondary_subset[4], 
+  background_color = color_even_rows)
+##
+row_5__col_C <- helper_fun(
+  secondary_subset[5], 
+  background_color = color_uneven_rows)
+##
+row_6__col_C <- helper_fun(
+  secondary_subset[6], 
+  background_color = color_even_rows)
+
+
+### plots for the grid 
+
+helper_fun <- function(label, background_color){
+  ggplot() + 
+  ggplot2::xlim(0,7) + 
+  ggplot2::ylim(0,7) +
+  theme_void() +
+  annotate(
+    "text", label = label,
+    x = 3, y = 4, size = 4, color = "black"
+  ) +
+  theme(
+    plot.background = element_rect(fill = background_color, color = "#CCCCCC00")
+  )
+}
+
+## 
+plot_grid_name_row_1 <- helper_fun(
+  label = "6", 
+  background_color = color_uneven_rows)
+##
+plot_grid_name_row_2 <- helper_fun(
+  label = "7", 
+  background_color = color_even_rows)
+##
+plot_grid_name_row_3 <- helper_fun(
+  label = "8", 
+  background_color = color_uneven_rows)
+##
+plot_grid_name_row_4 <- helper_fun(
+  label = "9", 
+  background_color = color_even_rows)
+##
+plot_grid_name_row_5 <- helper_fun(
+  label = "10", 
+  background_color = color_uneven_rows)
+##
+plot_grid_name_row_6 <- helper_fun(
+  label = "11", 
+  background_color = color_even_rows)
+
+## create ID column name  
+plot_grid_name_col_0 <- ggplot() + 
+  ggplot2::xlim(0,7) + 
+  ggplot2::ylim(0,7) +
+  theme_void() +
+  annotate(
+    "text", label = "ID",
+    x = 3, y = 4, size = 4, color = "black"
+  ) +
+  theme(
+    plot.background = element_rect(fill = column_names_color, # "#CCCCCC90", 
+                                   color = "#CCCCCC00"
+    )
+  )
+
+## create helper for col A-D
+helper_fun <- function(label, background_color){
+  ggplot() + 
+  ggplot2::xlim(0,7) + 
+  ggplot2::ylim(0,7) +
+  theme_void() +
+  annotate(
+    "text", label = label,
+    x = 3, y = 4, size = 4, color = "black"
+  ) +
+  theme(
+    plot.background = element_rect(fill = background_color, # "#CCCCCC90", 
+                                   color = "#CCCCCC00"
+    )
+  )
+}
+
+
+## 
+plot_grid_name_col_A <- helper_fun(
+  label = "A", 
+  background_color = column_names_color)
+##
+plot_grid_name_col_B <- helper_fun(
+  label = "B", 
+  background_color = column_names_color)
+##
+plot_grid_name_col_C <- helper_fun(
+  label = "C", 
+  background_color = column_names_color)
+##
+plot_grid_name_col_D <- helper_fun(
+  label = "D", 
+  background_color = column_names_color)
+
+
+## create Fig. 08.1
+Fig_08.1 <- gridExtra::grid.arrange(
+  grobs = list(
+    plot_grid_name_col_0, 
+    plot_grid_name_col_A, 
+    plot_grid_name_col_B, 
+    plot_grid_name_col_C, 
+    plot_grid_name_row_1, row_1__col_A, row_1__col_B, row_1__col_C,  
+    plot_grid_name_row_2, row_2__col_A, row_2__col_B, row_2__col_C, 
+    plot_grid_name_row_3, row_3__col_A, row_3__col_B, row_3__col_C, 
+    plot_grid_name_row_4, row_4__col_A, row_4__col_B, row_4__col_C, 
+    plot_grid_name_row_5, row_5__col_A, row_5__col_B, row_5__col_C,
+    plot_grid_name_row_6, row_6__col_A, row_6__col_B, row_6__col_C), 
+  widths = c(0.2, 0.8, 1, 1.1), 
+  heights = c(0.2, 1, 1, 1, 1, 1, 1),
+  layout_matrix = rbind(c(1:4),
+                        c(5:8), 
+                        c(9:12), 
+                        c(13:16), 
+                        c(17:20), 
+                        c(21:24), 
+                        c(25:28)))
+
+
+## save Fig. 08.1
+ggsave(file = "Output_Graphics/Fig_08.1.png", 
+       Fig_08.1, 
+       width = 16, 
+       height = 4 * 6.25, 
+       units = "cm", 
+       bg='#ffffff') 
+
+
+```
+
+### Fig. 8.2
+
+```{r}
+
+## set background colors 
+color_uneven_rows <- "#56B4E910"
+color_even_rows <- "#56B4E919"
+column_names_color <- "#56B4E930"
+
+
+## create plots for column A
+row_7__col_A <- descriptors_reference_group_design(
+  name = secondary_subset[7], 
+  brms_data = secondary_subset_brms, 
+  two_stage_MA_CM = secondary_two_stage_MA_CM, 
+  two_stage_MA_TM = secondary_two_stage_MA_TM, 
+  two_stage_MA_MD = two_stage_MA_MD,
+  background_color = color_uneven_rows)
+##
+row_8__col_A <- descriptors_reference_group_design(
+  name = secondary_subset[8], 
+  brms_data = secondary_subset_brms, 
+  two_stage_MA_CM = secondary_two_stage_MA_CM, 
+  two_stage_MA_TM = secondary_two_stage_MA_TM, 
+  two_stage_MA_MD = two_stage_MA_MD,
+  background_color = color_even_rows)
+
+## create plots for column B
+helper_fun <- function(brms_object_name, background_color){
+  MD_heterogeneity_plot_2(
+  brms_object = secondary_subset_brms[[brms_object_name]],
+  return_plot_list = FALSE, 
+  DV_lim_lower = NULL, 
+  DV_lim_upper = NULL, 
+  label_short = TRUE, 
+  background_color = background_color, 
+  y_lab_text_short = "DV")
+}
+
+row_7__col_B <- helper_fun(
+  secondary_subset[7], 
+  background_color = color_uneven_rows)
+row_8__col_B <- helper_fun(
+  secondary_subset[8], 
+  background_color = color_even_rows)
+
+## create plots for column C
+helper_fun <- function(brms_object_name, background_color){
+  MD_heterogeneity_plot_1(
+  brms_object = secondary_subset_brms[[brms_object_name]],
+  return_plot_list = FALSE, 
+  DV_lim_lower = NULL, 
+  DV_lim_upper = NULL, 
+  label_short = TRUE, 
+  background_color = background_color, 
+  x_lab_text_short = "group", 
+  y_lab_text_short = "DV")
+}
+
+row_7__col_C <- helper_fun(
+  secondary_subset[7], 
+  background_color = color_uneven_rows)
+row_8__col_C <- helper_fun(
+  secondary_subset[8], 
+  background_color = color_even_rows)
+
+### plots for the grid 
+
+helper_fun <- function(label, background_color){
+  ggplot() + 
+  ggplot2::xlim(0,7) + 
+  ggplot2::ylim(0,7) +
+  theme_void() +
+  annotate(
+    "text", label = label,
+    x = 3, y = 4, size = 4, color = "black"
+  ) +
+  theme(
+    plot.background = element_rect(fill = background_color, color = "#CCCCCC00")
+  )
+}
+
+## row names
+plot_grid_name_row_7 <- helper_fun(
+  label = "12", 
+  background_color = color_uneven_rows)
+##
+plot_grid_name_row_8 <- helper_fun(
+  label = "13", 
+  background_color = color_even_rows)
+
+## create ID column name  
+plot_grid_name_col_0 <- ggplot() + 
+  ggplot2::xlim(0,7) + 
+  ggplot2::ylim(0,7) +
+  theme_void() +
+  annotate(
+    "text", label = "ID",
+    x = 3, y = 4, size = 4, color = "black"
+  ) +
+  theme(
+    plot.background = element_rect(fill = column_names_color, # "#CCCCCC90", 
+                                   color = "#CCCCCC00"
+    )
+  )
+
+## create columnd names A-D
+helper_fun <- function(label, background_color){
+  ggplot() + 
+  ggplot2::xlim(0,7) + 
+  ggplot2::ylim(0,7) +
+  theme_void() +
+  annotate(
+    "text", label = label,
+    x = 3, y = 4, size = 4, color = "black"
+  ) +
+  theme(
+    plot.background = element_rect(fill = background_color, # "#CCCCCC90", 
+                                   color = "#CCCCCC00"
+    )
+  )
+}
+
+##
+plot_grid_name_col_A <- helper_fun(
+  label = "A", 
+  background_color = column_names_color)
+##
+plot_grid_name_col_B <- helper_fun(
+  label = "B", 
+  background_color = column_names_color)
+##
+plot_grid_name_col_C <- helper_fun(
+  label = "C", 
+  background_color = column_names_color)
+##
+plot_grid_name_col_D <- helper_fun(
+  label = "D", 
+  background_color = column_names_color)
+
+
+## create Fig. 08.2
+Fig_08.2 <- gridExtra::grid.arrange(
+  grobs = list(
+    plot_grid_name_col_0, 
+    plot_grid_name_col_A, 
+    plot_grid_name_col_B, 
+    plot_grid_name_col_C, 
+    plot_grid_name_row_7, row_7__col_A, row_7__col_B, row_7__col_C,  
+    plot_grid_name_row_8, row_8__col_A, row_8__col_B, row_8__col_C), 
+  # ncol = 5, 
+  widths = c(0.2, 0.8, 1, 1.1), 
+  heights = c(0.2, 1, 1),
+  layout_matrix = rbind(c(1:4),
+                        c(5:8), 
+                        c(9:12)))
+
+## save Fig. 08.2
+ggsave(file = "Output_Graphics/Fig_08.2.png", 
+       Fig_08.2, 
+       width = 16, 
+       height = 4 * 2.25, 
+       units = "cm", 
+       bg='#ffffff') 
+
+
+```
+
+# General Discussion 
+
+## Reference Group & Experimental Conditions
+
+```{r}
+
+## merge data into a single df
+Merged_Site_Summaries <- do.call(rbind, Site_Summaries$Site_Summaries)
+
+## typical sample size per replication site
+mean(unlist(Merged_Site_Summaries %>% 
+              dplyr::filter(MultiLab == "ML2") %>% 
+              dplyr::select(C_N)), na.rm = TRUE) + 
+  mean(unlist(Merged_Site_Summaries %>% 
+                dplyr::filter(MultiLab == "ML2") %>% 
+                dplyr::select(T_N)), na.rm = TRUE)
+
+## typical number of replications (k)
+mean(unlist(lapply(
+  names(Site_Summaries$Site_Summaries)[grep(pattern = "ML2", x = names(Site_Summaries$Site_Summaries))], 
+  function(x){
+    length(unique(
+      Site_Summaries$Site_Summaries[[x]]$Data_Collection_Site
+      ))
+  }
+)))
+
+
+## Power for heterogeneity 
+power_fun <- function(k, n, SD, tau, alpha){
+  
+  SD_i <- rep(SD, times = k)
+  
+  standard_error <- SD_i / sqrt(n) 
+  
+  w_i <- 1 / (standard_error^2 + tau^2)
+  
+  S_1 <- sum(w_i^1)
+  S_2 <- sum(w_i^2)
+  S_3 <- sum(w_i^3)
+  
+  E_Q <- (k-1) + (S_1 - S_2/S_1) * tau^2
+  
+  Var_Q <- 2 * (k-1) + 4 * (S_1 - S_2/S_1) * tau^2 + 2 * (S_2 - 2 * S_3/S_1 + (S_2^2)/(S_1^2) ) * tau^4
+  
+  r_tau2 <- E_Q^2 / Var_Q
+  lambda_tau2 <- E_Q / Var_Q
+  
+  df <- k-1
+  r <- r_tau2
+  lambda <- lambda_tau2
+  
+  c <- qchisq(1-alpha, df = df)
+  
+  ## Power
+  pgamma(c, shape = r, rate = lambda, lower.tail = FALSE)
+  
+}
+
+## calcualte I^2 
+I2_fun <- function(SD, tau, k, n){
+  
+  SD_i <- rep(SD, times = k)
+  
+  standard_error <- SD_i / sqrt(n) 
+  
+  # w_i <- 1 / (standard_error^2 + tau^2)
+  w_i <- standard_error^-2
+  
+  v_tilde <- (k-1) * sum(w_i) / ( sum(w_i)^2 - sum(w_i^2))
+  
+  ## I^2
+  tau^2 / (tau^2 + v_tilde)
+}
+
+## calculate power for two group design 
+round(
+  power_fun(
+  k = 57, 
+  n = 102, 
+  SD = 1.215, 
+  tau = 0.2, 
+  alpha = 0.05), 
+  digits = 3
+)
+
+## calculate I^2 for two group design 
+round(
+  I2_fun(SD = 1.215, tau = 0.2, k = 57, n = 102), 
+  digits = 3)
+
+## calculate power for remaining data of a three group design 
+round(
+  power_fun(
+  k = 57, 
+  n = 68, 
+  SD = 1.215, 
+  tau = 0.2, 
+  alpha = 0.05), 
+  digits = 3
+)
+
+## calculate I^2 for remaining data of a three group design 
+round(
+  I2_fun(SD = 1.215, tau = 0.2, k = 57, n = 68), 
+  digits = 3)
+
+
+```

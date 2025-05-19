@@ -3,23 +3,26 @@
 ### simulated data: Fig. 2, 3, 5 and 6 -> use the individual data inputs (Data_Collection_Site, CM, TM)
 ### brms object: Fig. 7 and 8 --> use the brms objects input (brms_object)
 
-MD_heterogeneity_plots <- function(
+## MD_heterogeneity_plot_2
+######
+
+MD_heterogeneity_plot_2 <- function(
     Data_Collection_Site = NULL, 
     CM = NULL, 
     TM = NULL, 
-    brms_object = NULL, ## model specification & names  in brms: DV ~ Group + (Group | Data_Collection_Site) 
+    brms_object = NULL, 
     return_plot_list = FALSE, 
-    plot_1_title = "a)", 
-    plot_2_title = "b)", 
     DV_lim_lower = NULL, 
     DV_lim_upper = NULL, 
-    label_short = FALSE){
+    label_short = FALSE, 
+    background_color = "white", 
+    y_lab_text_short = "DV"){
   
   if (label_short == FALSE) {
     label_DV <- "dependent variable"
     label_group <- "control & treatment group"
   } else if (label_short == TRUE) {
-    label_DV <- "DV"
+    label_DV <- y_lab_text_short
     label_group <- "group"
   }
   
@@ -67,52 +70,6 @@ MD_heterogeneity_plots <- function(
   # ## remove NA
   # plot_data <- na.omit(plot_data)
   
-  ## create plot_1 df 
-  plot_1_data <- data.frame(
-    Y = c(plot_data$CM, plot_data$TM), 
-    X = rep(c(0,1), each = length(plot_data$CM)), 
-    Data_Collection_Site = rep(plot_data$Data_Collection_Site, times = 2)
-  )
-  
-  if (is.null(DV_lim_lower) & is.null(DV_lim_upper)) {
-    
-    ## create plot 1
-    plot_1 <- ggplot(aes(x = X, 
-                         y = Y, 
-                         group = Data_Collection_Site), 
-                     data = plot_1_data) +
-      geom_point() + # create layer with group mean dots 
-      geom_line() + # create layer with MD lines 
-      ggtitle(plot_1_title) +
-      xlab(label = label_group) +
-      ylab(label = label_DV) + 
-      theme_minimal() + 
-      theme(legend.position = "none", 
-            axis.text.x = element_blank(),
-            axis.ticks.x = element_blank())
-    
-  } else {
-    
-    ## create plot 1
-    plot_1 <- ggplot(aes(x = X, 
-                         y = Y, 
-                         group = Data_Collection_Site), 
-                     data = plot_1_data) +
-      geom_point() + # create layer with group mean dots 
-      geom_line() + # create layer with MD lines 
-      ggtitle(plot_1_title) +
-      xlab(label = label_group) +
-      ylab(label = label_DV) + 
-      ylim(c(DV_lim_lower, DV_lim_upper)) +
-      theme_minimal() + 
-      theme(legend.position = "none", 
-            axis.text.x = element_blank(),
-            axis.ticks.x = element_blank())
-    
-  }
-  
-  
-  
   ## create plot_2 df 
   plot_2_data <- plot_data
   
@@ -131,13 +88,16 @@ MD_heterogeneity_plots <- function(
                      data = plot_2_data) + 
       geom_linerange() + 
       coord_flip() +
-      ggtitle(plot_2_title) +
       xlab(label = "replication") +
       ylab(label = label_DV) + 
       theme_minimal() + 
       theme(legend.position = "none", 
             axis.text.y = element_blank(),
-            axis.ticks.y = element_blank())
+            axis.ticks.y = element_blank(), 
+            plot.background = element_rect(fill = background_color, color = "#CCCCCC00"), 
+            panel.grid.major = element_line(color = "#AAAAAA70"), 
+            panel.grid.minor = element_line(color = "#AAAAAA00"), 
+            panel.grid.major.y = element_blank())
     
   } else {
     
@@ -150,23 +110,28 @@ MD_heterogeneity_plots <- function(
       geom_linerange() + 
       ylim(c(DV_lim_lower, DV_lim_upper)) +
       coord_flip() +
-      ggtitle(plot_2_title) +
       xlab(label = "replication") +
       ylab(label = label_DV) + 
       theme_minimal() + 
       theme(legend.position = "none", 
             axis.text.y = element_blank(),
-            axis.ticks.y = element_blank())
+            axis.ticks.y = element_blank(), 
+            plot.background = element_rect(fill = background_color, color = "#CCCCCC00"), 
+            panel.grid.major = element_line(color = "#AAAAAA70"),
+            panel.grid.minor = element_line(color = "#AAAAAA00"), 
+            panel.grid.major.y = element_blank()) 
     
   }
   
-  
-  ## combine both plots
+  ## output
   if (return_plot_list == TRUE) {
-    list(plot_1, plot_2)
+    list(plot_2)
   } else {
-    gridExtra::grid.arrange(grobs = list(plot_1, plot_2), 
-                            ncol = 2)
+    plot_2
   }
   
 }
+
+
+
+#####
