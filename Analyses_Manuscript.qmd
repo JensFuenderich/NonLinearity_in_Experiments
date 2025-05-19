@@ -1507,7 +1507,7 @@ length(excluded)
 
 ```
 
-## Excluding Qualitative Independent variables 
+## Excluding Qualitative Independent variables
 
 ```{r}
 
@@ -1635,9 +1635,6 @@ officer::read_docx() %>%
 
 ```{r}
 
-### by default, this chunk only imports the files  
-### if you wish to re-run the brms models, remove the # in the following chunks
-
 ## remove multi-lab ID for further use 
 primary_subset_short <- stringr::str_remove(primary_subset,  "ML1_")
 primary_subset_short <- stringr::str_remove(primary_subset_short,  "ML2_")
@@ -1662,7 +1659,7 @@ primary_subset_brms <- lapply(primary_subset_short,
 names(primary_subset_brms) <- primary_subset
 
 ## export results
-readr::write_rds(primary_subset_brms, "primary_subset_brms.rds")
+readr::write_rds(primary_subset_brms, "Output_Data/primary_subset_brms.rds")
 
 # ## import results: if the data exist, this saves a lot of time
 # primary_subset_brms <- readr::read_rds("Output_Data/primary_subset_brms.rds")
@@ -1697,7 +1694,7 @@ secondary_subset_brms <- lapply(secondary_subset_short,
 names(secondary_subset_brms) <- secondary_subset
 
 ## export results
-readr::write_rds(secondary_subset_brms, "secondary_subset_brms.rds")
+readr::write_rds(secondary_subset_brms, "Output_Data/secondary_subset_brms.rds")
 
 # ## import results: if the data exist, this saves a lot of time
 # secondary_subset_brms <- readr::read_rds("Output_Data/secondary_subset_brms.rds")
@@ -2455,7 +2452,7 @@ ggsave(file = "Output_Graphics/Fig_08.2.png",
 
 ```
 
-# General Discussion 
+# General Discussion
 
 ## Reference Group & Experimental Conditions
 
