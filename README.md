@@ -6,7 +6,7 @@ This repostiroy contains the scripts and R-documentation for our preprint:
 
 Preprint: https://osf.io/preprints/psyarxiv/s82zr
 
-The code for the manuscript is mainly contained in the document ["Analyses_Manuscript.qmd"](https://github.com/JensFuenderich/NonLinearity_in_Experiments/blob/main/Analyses_Manuscript.qmd) with an additional [custom plot function](https://github.com/JensFuenderich/NonLinearity_in_Experiments/blob/main/Custom_Functions/MD_heterogeneity_plots.R) that is sourced by the manuscript. 
+The code for the manuscript is mainly contained in the document ["Analyses_Manuscript.qmd"](https://github.com/JensFuenderich/NonLinearity_in_Experiments/blob/main/Analyses_Manuscript.qmd) with an additional [custom plot functions](https://github.com/JensFuenderich/NonLinearity_in_Experiments/blob/main/Custom_Functions/) that are sourced by the manuscript. 
 
 We provide data and results, as well as copies of the code, on OSF:
 https://osf.io/4hv93/ 
