@@ -2,9 +2,9 @@
 
 This repostiroy contains the scripts and R-documentation for our preprint: 
 
-*Whoever has will be given more? Exploring the Impact of Non-Linearity on Effect Heterogeneity in Psychological Research.* (Fünderich, Beinhauer, Renkewitz, 2024)
+*Exploring the Impact of Non-Linearity on Effect Heterogeneity in Psychological Research.* (Fünderich, Beinhauer, Renkewitz, 2025)
 
-Preprint: https://osf.io/preprints/psyarxiv/s82zr
+Preprint: https://doi.org/10.31234/osf.io/s82zr_v3 
 
 The code for the manuscript is mainly contained in the document ["Analyses_Manuscript.qmd"](https://github.com/JensFuenderich/NonLinearity_in_Experiments/blob/main/Analyses_Manuscript.qmd) with an additional [custom plot functions](https://github.com/JensFuenderich/NonLinearity_in_Experiments/blob/main/Custom_Functions/) that are sourced by the manuscript. 
 
