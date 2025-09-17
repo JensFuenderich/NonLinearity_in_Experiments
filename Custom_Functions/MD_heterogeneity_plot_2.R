@@ -15,6 +15,7 @@ MD_heterogeneity_plot_2 <- function(
     DV_lim_lower = NULL, 
     DV_lim_upper = NULL, 
     label_short = FALSE, 
+    bw = FALSE,
     background_color = "white", 
     y_lab_text_short = "DV"){
   
@@ -66,6 +67,11 @@ MD_heterogeneity_plot_2 <- function(
   
   ## create factor for negative effects 
   plot_data$negative_effects <- as.factor(ifelse(plot_data$MD > 0, 1, 0))
+  # if (bw == FALSE) {
+  #   plot_data$negative_effects <- as.factor(ifelse(plot_data$MD > 0, 1, 0))
+  # } else if (bw == TRUE) {
+  #   plot_data$negative_effects <- ifelse(plot_data$MD > 0, "black", "grey")
+  # }
   
   # ## remove NA
   # plot_data <- na.omit(plot_data)
@@ -97,7 +103,8 @@ MD_heterogeneity_plot_2 <- function(
             plot.background = element_rect(fill = background_color, color = "#CCCCCC00"), 
             panel.grid.major = element_line(color = "#AAAAAA70"), 
             panel.grid.minor = element_line(color = "#AAAAAA00"), 
-            panel.grid.major.y = element_blank())
+            panel.grid.major.y = element_blank())  + 
+      scale_color_manual(values = if (bw) c("grey", "black") else c("#DF536B", "#2297E6"))
     
   } else {
     
@@ -119,7 +126,8 @@ MD_heterogeneity_plot_2 <- function(
             plot.background = element_rect(fill = background_color, color = "#CCCCCC00"), 
             panel.grid.major = element_line(color = "#AAAAAA70"),
             panel.grid.minor = element_line(color = "#AAAAAA00"), 
-            panel.grid.major.y = element_blank()) 
+            panel.grid.major.y = element_blank()) + 
+      scale_color_manual(values = if (bw) c("black", "grey") else c("#2297E6", "#DF536B"))
     
   }
   
