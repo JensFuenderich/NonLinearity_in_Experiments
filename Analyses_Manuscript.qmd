@@ -72,8 +72,6 @@ rm(packages)
 
 ## Fig. 1
 
-##### color
-
 ```{r}
 
 ## concave exponential functional relationship 
@@ -256,11 +254,13 @@ Fig_02.1_data <- data.frame(
   TM = y_treatment
 )
 
-## create Fig. 0X
+## create Fig. 02.1
 Fig_02.1 <- ggplot(data = Fig_02.1_data, 
                  aes(x = CM, 
                      y = TM)) + 
-  geom_segment(aes(xend = CM, yend = CM), color = "grey", alpha = 1) +
+  geom_segment(aes(xend = CM, yend = CM), 
+               color = "#2297E6", # "grey", 
+               alpha = 1) +
   geom_point() + 
   geom_point(aes(x = CM, 
                  y = TM)) + 
@@ -272,7 +272,8 @@ Fig_02.1 <- ggplot(data = Fig_02.1_data,
        max(c(Fig_02.1_data$CM, Fig_02.1_data$TM)) ) +
   theme_minimal() + 
   theme(axis.text.x = element_blank(),
-        axis.text.y = element_blank()) + 
+        axis.text.y = element_blank(), 
+        axis.title = element_blank()) + 
   ggtitle(label = "2a")
 
 
@@ -293,11 +294,13 @@ Fig_02.2_data <- data.frame(
   TM = y_treatment
 )
 
-## create Fig. 0X
+## create Fig. 02.2
 Fig_02.2 <- ggplot(data = Fig_02.2_data, 
                  aes(x = CM, 
                      y = TM)) + 
-  geom_segment(aes(xend = CM, yend = CM), color = "grey", alpha = 1) +
+  geom_segment(aes(xend = CM, yend = CM), 
+               # color = "grey", 
+               alpha = 1) +
   geom_point() + 
   geom_point(aes(x = CM, 
                  y = TM)) + 
@@ -309,7 +312,8 @@ Fig_02.2 <- ggplot(data = Fig_02.2_data,
        max(c(Fig_02.2_data$CM, Fig_02.2_data$TM)) ) +
   theme_minimal() + 
   theme(axis.text.x = element_blank(),
-        axis.text.y = element_blank()) + 
+        axis.text.y = element_blank(), 
+        axis.title = element_blank()) + 
   ggtitle(label = "2b")
 
 
@@ -330,11 +334,13 @@ Fig_02.3_data <- data.frame(
   TM = y_treatment
 )
 
-## create Fig. 0X
+## create Fig. 02.3
 Fig_02.3 <- ggplot(data = Fig_02.3_data, 
                  aes(x = CM, 
                      y = TM)) + 
-  geom_segment(aes(xend = CM, yend = CM), color = "grey", alpha = 1) +
+  geom_segment(aes(xend = CM, yend = CM), 
+               color = "#DF536B", # "grey", 
+               alpha = 1) +
   geom_point() + 
   geom_point(aes(x = CM, 
                  y = TM)) + 
@@ -346,13 +352,21 @@ Fig_02.3 <- ggplot(data = Fig_02.3_data,
        max(c(Fig_02.3_data$CM, Fig_02.3_data$TM)) ) +
   theme_minimal() + 
   theme(axis.text.x = element_blank(),
-        axis.text.y = element_blank()) + 
+        axis.text.y = element_blank(), 
+        axis.title = element_blank()) + 
   ggtitle(label = "2c")
 
 
-
-Fig_02 <- gridExtra::grid.arrange(grobs = list(Fig_02.1, Fig_02.2, Fig_02.3), 
-                        ncol = 3)
+## create Fig. 02
+Fig_02 <- gridExtra::grid.arrange(
+  grobs = list(Fig_02.1, Fig_02.2, Fig_02.3), 
+  ncol = 3, 
+  bottom = grid::textGrob("control group mean", 
+                          gp = grid::gpar(fontsize = 14)), 
+  left = grid::textGrob("treatment group mean", 
+                        rot = 90,
+                        gp = grid::gpar(fontsize = 14))
+  )
 
 ## save Fig. 02
 ggsave(file = "Output_Graphics/Fig_02.jpg", 
@@ -404,6 +418,8 @@ Fig_03 <- ggplot(data = Fig_03_data,
        max(c(Fig_03_data$CM, Fig_03_data$TM)) ) +
   ylim(min(c(Fig_03_data$CM, Fig_03_data$TM)), 
        max(c(Fig_03_data$CM, Fig_03_data$TM)) ) +
+  xlab(label = "control group mean") + 
+  ylab(label = "treatment group mean") +
   theme_minimal() + 
   theme(axis.text.x = element_blank(),
         axis.text.y = element_blank()) 
@@ -475,6 +491,8 @@ Fig_04 <- ggplot() +
   geom_point(data = Fig_04_data, 
              aes(x = CM, 
                  y = TM1)) + 
+  xlab(label = "control group mean") + 
+  ylab(label = "treatment group mean") +
   theme_minimal() + 
   theme(axis.text.x = element_blank(),
         axis.text.y = element_blank()) +
@@ -924,6 +942,8 @@ officer::read_docx() %>%
 ## show table 
 Table_2
 
+rm(all_designs_repoID)
+
 ```
 
 ## Table 3
@@ -1080,6 +1100,8 @@ officer::read_docx() %>%
 ## show table 
 Table_3
 
+rm(included_homogeneous_nonnull_repoID)
+
 ```
 
 ## Descriptors
@@ -1197,6 +1219,8 @@ ISC_decision <- lapply(
 
 ISC_df <- do.call(rbind, ISC_decision)
 
+rm(ISC_decision)
+
 ```
 
 #### rank correlation Kendall's tau
@@ -1280,6 +1304,7 @@ kendalls_tau_b_decision <- lapply(
 
 tau_b_df <- do.call(rbind, kendalls_tau_b_decision)
 
+rm(kendalls_tau_b_decision)
 
 ```
 
@@ -1303,6 +1328,7 @@ ISC2 <- lapply(
 
 ISC2_df <- do.call(rbind, ISC2)
 
+rm(ISC2)
 
 ```
 
@@ -1325,6 +1351,8 @@ tau_MD <- lapply(
 
 tau_MD_df_3 <- do.call(rbind, tau_MD)
 
+rm(tau_MD)
+
 ```
 
 #### tau_CM
@@ -1346,6 +1374,8 @@ tau_CM <- lapply(
 )
 
 tau_CM_df_3 <- do.call(rbind, tau_CM)
+
+rm(tau_CM)
 
 ```
 
@@ -1418,6 +1448,8 @@ ISC_decision <- lapply(
 )
 
 ISC_df_3 <- do.call(rbind, ISC_decision)
+
+rm(ISC_decision)
 
 ```
 
@@ -1502,6 +1534,7 @@ kendalls_tau_b_decision <- lapply(
 
 tau_b_df_3 <- do.call(rbind, kendalls_tau_b_decision)
 
+rm(kendalls_tau_b_decision)
 
 ```
 
@@ -1525,6 +1558,7 @@ ISC2 <- lapply(
 
 ISC2_df_3 <- do.call(rbind, ISC2)
 
+rm(ISC2)
 
 ```
 
@@ -1574,6 +1608,7 @@ officer::read_docx() %>%
 ## show table 
 Table_4
 
+rm(Table_4_list)
 
 ```
 
@@ -1591,7 +1626,14 @@ selection <- c("Risen",
 
 indexing_helper <- data.frame(
   names = selection, 
-  plot_indexing = c("5a", "5b", "5c", "5d")
+  plot_indexing = c(
+    "5a", "5b", "5c", "5d"), 
+  data_set_indexing = c(
+    "data set 1", 
+    "data set 2", 
+    "data set 6", 
+    "data set 9"
+  ) 
 )
 
 Fig_05_list <- lapply(
@@ -1610,10 +1652,18 @@ Fig_05_list <- lapply(
         mean(posterior_draws$b_Group) + 
         colMeans(posterior_draws[,grep(pattern = ",Group]", x = names(posterior_draws))])
       )
-    
+  
     plot_letter <- indexing_helper %>% 
-  dplyr::filter(names == name) %>% 
-  dplyr::select(plot_indexing)
+      dplyr::filter(names == name) %>% 
+      dplyr::select(plot_indexing)
+    
+    data_set_ID <- indexing_helper %>% 
+      dplyr::filter(names == name) %>% 
+      dplyr::select(data_set_indexing) 
+    
+    lims <- range(c(Fig_05_data$CM, Fig_05_data$TM))
+    pad <- 0.05 * diff(lims)
+    lims_expanded <- c(lims[1] - pad, lims[2] + pad)
     
     ## create Fig. 05.1
     ggplot(data = Fig_05_data, 
@@ -1625,30 +1675,41 @@ Fig_05_list <- lapply(
                  y = TM)) + 
       geom_abline(intercept = 0, 
               slope = 1) + 
-      xlim(min(c(Fig_05_data$CM, Fig_05_data$TM)), 
-           max(c(Fig_05_data$CM, Fig_05_data$TM)) ) +
-      ylim(min(c(Fig_05_data$CM, Fig_05_data$TM)), 
-           max(c(Fig_05_data$CM, Fig_05_data$TM)) ) +
+      # xlim(min(c(Fig_05_data$CM, Fig_05_data$TM)), 
+      #      max(c(Fig_05_data$CM, Fig_05_data$TM)) ) +
+      # ylim(min(c(Fig_05_data$CM, Fig_05_data$TM)), 
+      #      max(c(Fig_05_data$CM, Fig_05_data$TM)) ) +
       theme_minimal() + 
-      ggtitle(label = plot_letter)
+      theme(axis.title = element_blank()) +
+      ggtitle(label = plot_letter, 
+              subtitle = data_set_ID) + 
+      coord_fixed(
+        xlim = lims_expanded,
+        ylim = lims_expanded,
+        expand = FALSE)
   }
 )
 
 
-Fig_05 <- gridExtra::grid.arrange(grobs = Fig_05_list, 
-                        ncol = 2)
+Fig_05 <- gridExtra::grid.arrange(
+  grobs = Fig_05_list,
+  ncol = 2, 
+  bottom = grid::textGrob("control group mean", 
+                          gp = grid::gpar(fontsize = 14)), 
+  left = grid::textGrob("treatment group mean", 
+                        rot = 90,
+                        gp = grid::gpar(fontsize = 14)))
 
 ## save Fig. 05
 ggsave(file = "Output_Graphics/Fig_05.jpg", 
        Fig_05, 
        width = 16, 
-       height = 8, 
+       height = 16, 
        dpi = 600,
        units = "cm") 
 
 ## keep the environment tidy 
-rm()
-
+rm(selection, indexing_helper)
 
 ```
 
@@ -1750,9 +1811,14 @@ Table_5
 ```{r}
 
 ## create df for plot index
-included_homogeneous_nonnull_df <- data.frame(
+indexing_helper <- data.frame(
   names = included_homogeneous_nonnull, 
-  plot_indexing = c("7a", "7b", "7c")
+  plot_indexing = c("7a", "7b", "7c"), 
+  data_set_indexing = c(
+    "data set 12", 
+    "data set 13", 
+    "data set 14"
+  ) 
 )
 
 ## create the three plots
@@ -1773,10 +1839,17 @@ Fig_07_list <- lapply(
         colMeans(posterior_draws[,grep(pattern = ",Group]", x = names(posterior_draws))])
       )
     
-    plot_letter <- included_homogeneous_nonnull_df %>% 
+    plot_letter <- indexing_helper %>% 
       dplyr::filter(names == name) %>% 
       dplyr::select(plot_indexing)
     
+    data_set_ID <- indexing_helper %>% 
+      dplyr::filter(names == name) %>% 
+      dplyr::select(data_set_indexing) 
+    
+    lims <- range(c(Fig_07_data$CM, Fig_07_data$TM))
+    pad <- 0.05 * diff(lims)
+    lims_expanded <- c(lims[1] - pad, lims[2] + pad)
     
     ## create Fig. 07.X
     ggplot(data = Fig_07_data, 
@@ -1793,24 +1866,36 @@ Fig_07_list <- lapply(
       ylim(min(c(Fig_07_data$CM, Fig_07_data$TM)), 
            max(c(Fig_07_data$CM, Fig_07_data$TM)) ) +
       theme_minimal() + 
-      ggtitle(label = plot_letter)
+      theme(axis.title = element_blank()) +
+      ggtitle(label = plot_letter, 
+              subtitle = data_set_ID) + 
+      coord_fixed(
+        xlim = lims_expanded,
+        ylim = lims_expanded,
+        expand = FALSE)
   }
 )
 
 ## combine plots 7a-7c
-Fig_07 <- gridExtra::grid.arrange(grobs = Fig_07_list, 
-                        ncol = 3)
+Fig_07 <- gridExtra::grid.arrange(
+  grobs = Fig_07_list, 
+  ncol = 3, 
+  bottom = grid::textGrob("control group mean", 
+                          gp = grid::gpar(fontsize = 14)), 
+  left = grid::textGrob("treatment group mean", 
+                        rot = 90,
+                        gp = grid::gpar(fontsize = 14)))
 
 ## save Fig. 07
 ggsave(file = "Output_Graphics/Fig_07.jpg", 
        Fig_07, 
        width = 16, 
-       height = 8, 
+       height = 6, 
        dpi = 600,
        units = "cm") 
 
 ## keep the environment tidy 
-rm()
+rm(selection, indexing_helper)
 
 
 ```
@@ -1940,6 +2025,12 @@ round(
 
 ## include all
 
+indexing_helper <- data.frame(
+  names = all_designs_ID, 
+  plot_indexing = paste("A1.", 1:11, sep = ""), 
+  data_set_indexing = paste("data set", 1:11, sep = " ")
+)
+
 Fig_A1_list <- lapply(
   all_designs_ID,
   function(name){
@@ -1957,6 +2048,21 @@ Fig_A1_list <- lapply(
         colMeans(posterior_draws[,grep(pattern = ",Group]", x = names(posterior_draws))])
       )
     
+    ## plot names 
+    plot_letter <- indexing_helper %>% 
+      dplyr::filter(names == name) %>% 
+      dplyr::select(plot_indexing)
+    
+    ## data set names
+    data_set_ID <- indexing_helper %>% 
+      dplyr::filter(names == name) %>% 
+      dplyr::select(data_set_indexing) 
+    
+    ## axis limits (consistent between x & y)
+    lims <- range(c(Fig_A1_data$CM, Fig_A1_data$TM))
+    pad <- 0.05 * diff(lims)
+    lims_expanded <- c(lims[1] - pad, lims[2] + pad)
+    
     ## create Fig. A.1
     ggplot(data = Fig_A1_data, 
            aes(x = CM, 
@@ -1971,19 +2077,32 @@ Fig_A1_list <- lapply(
            max(c(Fig_A1_data$CM, Fig_A1_data$TM)) ) +
       ylim(min(c(Fig_A1_data$CM, Fig_A1_data$TM)), 
            max(c(Fig_A1_data$CM, Fig_A1_data$TM)) ) +
-      theme_minimal() 
+      theme_minimal() +
+      theme(axis.title = element_blank()) +
+      ggtitle(label = plot_letter, 
+              subtitle = data_set_ID) + 
+      coord_fixed(
+        xlim = lims_expanded,
+        ylim = lims_expanded,
+        expand = FALSE)
   }
 )
 
 
-Fig_A1 <- gridExtra::grid.arrange(grobs = Fig_A1_list, 
-                        ncol = 3)
+Fig_A1 <- gridExtra::grid.arrange(
+  grobs = Fig_A1_list, 
+  ncol = 3, 
+  bottom = grid::textGrob("control group mean", 
+                          gp = grid::gpar(fontsize = 14)), 
+  left = grid::textGrob("treatment group mean", 
+                        rot = 90,
+                        gp = grid::gpar(fontsize = 14)))
 
 ## save Fig. A1
 ggsave(file = "Output_Graphics/Fig_A1.jpg", 
        Fig_A1, 
-       width = 16, 
-       height = 16, 
+       width = 32, 
+       height = 32, 
        dpi = 600,
        units = "cm") 
 
